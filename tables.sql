@@ -130,7 +130,7 @@ create table material (
 
 -- remplissage des tables
 
-\COPY countries FROM 'countries.dat' WITH csv;
+\COPY countries FROM 'CSV/countries.csv' WITH csv;
 \COPY diplomatic_relationships FROM 'diplomatic_relationships.dat'  WITH csv;
 \COPY ports FROM 'ports.dat' WITH csv;
 \COPY ships FROM 'ships.dat' WITH csv;
