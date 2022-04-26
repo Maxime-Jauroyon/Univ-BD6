@@ -28,7 +28,8 @@ create table diplomatic_relationships (
 create table ports (
     port_name text,
     port_country_name text,
-    location text not null,
+    latitude float not null,
+    longitude float not null,
     category integer not null,
     primary key (port_name,port_country_name),
     foreign key (port_country_name) references countries(country_name));
