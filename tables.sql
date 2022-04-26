@@ -120,27 +120,5 @@ create table clothes (
 
 create table material (
     product_id integer primary key,
-    material text not null,
-    price_per_cubic_meter integer not null,
+    volume_price integer not null,
     foreign key (product_id) references products(product_id));
-
-
-
-
-
-
--- remplissage des tables
-
-\COPY countries FROM 'CSV/countries.csv' WITH csv;
-\COPY diplomatic_relationships FROM 'diplomatic_relationships.dat'  WITH csv;
-\COPY ports FROM 'ports.dat' WITH csv;
-\COPY ships FROM 'ships.dat' WITH csv;
-\COPY ships_nationalities FROM 'ships_nationalities.dat' WITH csv;
-\COPY shipments FROM 'shipments.dat' WITH csv;
-\COPY legs FROM 'legs.dat' WITH csv;
-\COPY products FROM 'products.dat' WITH csv;
-\COPY cargo FROM 'cargo.dat' WITH csv;
-\COPY trading FROM 'trading.dat' WITH csv;
-\COPY food FROM 'food.dat' WITH csv;
-\COPY clothes FROM 'clothes.dat' WITH csv;
-\COPY material FROM 'material.dat' WITH csv;
