@@ -60,7 +60,7 @@ create table shipments (
     end_date date,
     duration integer,
     passengers integer not null,
-    type text not null,
+    type_shipment text not null,
     class text not null,
     capture_date date,
     distance integer not null,
