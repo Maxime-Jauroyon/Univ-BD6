@@ -115,7 +115,7 @@ create table clothes (
     product_id integer primary key,
     material text not null,
     unit_price integer not null,
-    unit_weight integer not null,
+    unit_weight float not null,
     foreign key (product_id) references products(product_id));
 
 create table material (
@@ -129,15 +129,15 @@ create table material (
 -- remplissage des tables
 
 \COPY countries FROM 'CSV/countries.csv' WITH csv;
-\COPY diplomatic_relationships FROM 'diplomatic_relationships.dat'  WITH csv;
-\COPY ports FROM 'ports.dat' WITH csv;
-\COPY ships FROM 'ships.dat' WITH csv;
-\COPY ships_nationalities FROM 'ships_nationalities.dat' WITH csv;
-\COPY shipments FROM 'shipments.dat' WITH csv;
-\COPY legs FROM 'legs.dat' WITH csv;
-\COPY products FROM 'products.dat' WITH csv;
-\COPY cargo FROM 'cargo.dat' WITH csv;
-\COPY trading FROM 'trading.dat' WITH csv;
-\COPY food FROM 'food.dat' WITH csv;
-\COPY clothes FROM 'clothes.dat' WITH csv;
-\COPY material FROM 'material.dat' WITH csv;
+\COPY diplomatic_relationships FROM 'CSV/diplomatic_relationships.csv'  WITH csv;
+\COPY ports FROM 'CSV/ports.csv' WITH csv;
+\COPY ships FROM 'CSV/ships.csv' WITH csv;
+\COPY ships_nationalities FROM 'CSV/ships_nationalities.csv' WITH csv;
+\COPY shipments FROM 'CSV/shipments.csv' WITH csv;
+\COPY legs FROM 'CSV/legs.csv' WITH csv;
+\COPY products FROM 'CSV/products.csv' WITH csv;
+\COPY cargo FROM 'CSV/cargo.csv' WITH csv;
+\COPY trading FROM 'CSV/trading.csv' WITH csv;
+\COPY food FROM 'CSV/food.csv' WITH csv;
+\COPY clothes FROM 'CSV/clothes.csv' WITH csv;
+\COPY material FROM 'CSV/material.csv' WITH csv;
