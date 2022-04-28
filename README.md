@@ -7,7 +7,7 @@
 - Connect to (or create) an empty database with UTF-8 encoding.
 - Run `\i bd6.sql`.
 
-The database should now be populated with tables and data
+The database should now be populated with tables and data.
 
 ## Contributors
 
