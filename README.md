@@ -3,7 +3,7 @@
 ## Installation
 
 - Open a terminal in the project's root directory.
-- Connect to PosgreSQL with your user.
+- Connect to PostgreSQL with your user.
 - Connect to (or create) an empty database.
 - Run `\i bd6.sql`, the database should now be populated with tables and data.
 
