@@ -4,7 +4,7 @@
 
 - Open a terminal in the project's root directory.
 - Connect to PostgreSQL with the desired user.
-- Connect to (or create) an empty database.
+- Connect to (or create) an empty database with UTF-8 encoding.
 - Run `\i bd6.sql`.
 
 The database should now be populated with tables and data
