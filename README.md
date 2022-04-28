@@ -11,8 +11,8 @@
 
 ### Groupe 5
 
-- [JAUROYON Maxime](https://gaufre.informatique.univ-paris-diderot.fr/jauroyon)
-- [KINDEL Hugo (21952778)](https://gaufre.informatique.univ-paris-diderot.fr/hugokindel)
+- JAUROYON Maxime
+- KINDEL Hugo (21952778)
 
 ## License
 
