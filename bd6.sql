@@ -184,4 +184,4 @@ $function$;
 
 ALTER TABLE shipments ADD CONSTRAINT check_departure CHECK (departed = FALSE OR departure_mismatches() = 0);
 
-\i 'data/load.sql';
+\i 'load.sql';
