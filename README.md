@@ -5,7 +5,9 @@
 - Open a terminal in the project's root directory.
 - Connect to PostgreSQL with the desired user.
 - Connect to (or create) an empty database.
-- Run `\i bd6.sql`, the database should now be populated with tables and data.
+- Run `\i bd6.sql`.
+
+The database should now be populated with tables and data
 
 ## Contributors
 
