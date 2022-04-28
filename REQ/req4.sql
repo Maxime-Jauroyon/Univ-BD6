@@ -1,7 +1,7 @@
 -- Liste les bateaux qui ont fait tous leurs voyages en partant avec le nombre maximum de passagers
 
 SELECT
-    ship_id
+    DISTINCT ship_id
 FROM
     ships AS S
     NATURAL JOIN shipments
