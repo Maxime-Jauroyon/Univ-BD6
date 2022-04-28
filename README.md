@@ -13,7 +13,7 @@ The database should now be populated with tables and data
 
 ### Groupe 5
 
-- JAUROYON Maxime
+- JAUROYON Maxime (21954099)
 - KINDEL Hugo (21952778)
 
 ## License
