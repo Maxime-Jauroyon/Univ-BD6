@@ -123,7 +123,36 @@ create table material (
     volume_price integer not null,
     foreign key (product_id) references products(product_id));
 
+-- contraintes
 
+
+-- lorsque l'on supprime une cargaison on verifie que l'on part encore avec le plein de passagers ou cargaisons (volume)
+-- on doit donc ajouter les nouvelles cargaisons avant de supprimer les anciennes
+CREATE OR REPLACE FUNCTION departure_shipments_trig() RETURNS trigger
+	LANGUAGE plpgsql AS
+$$BEGIN
+	IF (SELECT COUNT(*)
+        FROM ships NATURAL JOIN (SELECT shipment_id,ship_id,passengers, SUM(A.volume_cargo) as volume_shipment
+                                 FROM shipments NATURAL LEFT OUTER JOIN (SELECT shipment_id,cargo_id,((quantity * volume) + 0.0) as volume_cargo
+                                                              FROM cargo NATURAL JOIN products) as A
+                                 GROUP BY shipment_id,ship_id,passengers) as B
+        WHERE B.passengers = passengers_capacity
+        OR B.volume_shipment >= tonnage_capacity
+       ) <> (SELECT COUNT(*)
+            FROM shipments)
+	THEN 
+	   RAISE EXCEPTION 'a shipment doesn t respect the requierement to departure';
+	END IF;
+
+	RETURN OLD;
+END;$$;
+
+DROP TRIGGER IF EXISTS departure_shipments_trig ON cargo;
+
+CREATE CONSTRAINT TRIGGER departure_shipments_trig
+	AFTER DELETE ON cargo
+	DEFERRABLE INITIALLY DEFERRED
+	FOR EACH ROW EXECUTE PROCEDURE departure_shipments_trig();
 
 
 -- remplissage des tables
@@ -141,3 +170,8 @@ create table material (
 \COPY food FROM 'CSV/food.csv' WITH csv;
 \COPY clothes FROM 'CSV/clothes.csv' WITH csv;
 \COPY material FROM 'CSV/material.csv' WITH csv;
+
+-- tests
+
+INSERT INTO cargo VALUES (21,1,12,6);
+DELETE FROM cargo WHERE cargo_id = 1;
