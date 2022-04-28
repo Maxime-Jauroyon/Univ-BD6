@@ -9,6 +9,8 @@
 
 ## Contributors
 
+### Groupe 5
+
 - [JAUROYON Maxime](https://gaufre.informatique.univ-paris-diderot.fr/jauroyon)
 - [KINDEL Hugo](https://gaufre.informatique.univ-paris-diderot.fr/hugokindel)
 
