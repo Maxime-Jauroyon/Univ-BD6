@@ -604,7 +604,7 @@ INSERT INTO legs (shipment_id, port_name, port_country_name, offloaded_passenger
 (6, 'port5', 'Dai Viet', 39, 50, 1782),
 (6, 'port5', 'Royaume du Kongo', 23, 42, 1429),
 (6, 'port5', 'Saint-Empire romain germanique', 3, 13, 672),
-(7, 'port5', 'Empire cherifien', 35, 20, 1923),
+(7, 'port5', 'Empire cherifien', 35, 20, 1823),
 (7, 'port5', 'Royaume de France', 47, 32, 872);
 
 INSERT INTO cargo (cargo_id, shipment_id, product_id, quantity) VALUES
