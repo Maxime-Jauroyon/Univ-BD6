@@ -1,3 +1,7 @@
+DROP TRIGGER IF EXISTS trigger_shipment_for_mismatches on shipments;
+
+DROP FUNCTION IF EXISTS check_shipment_for_mismatches;
+
 DROP TABLE IF EXISTS material;
 DROP TABLE IF EXISTS food;
 DROP TABLE IF EXISTS clothes;
@@ -11,8 +15,6 @@ DROP TABLE IF EXISTS ships;
 DROP TABLE IF EXISTS ports;
 DROP TABLE IF EXISTS diplomatic_relationships;
 DROP TABLE IF EXISTS countries;
-
-
 
 CREATE TABLE cargo (
     cargo_id int4 NOT NULL,
@@ -148,309 +150,69 @@ ALTER TABLE trading ADD FOREIGN KEY (port_name, port_country_name) REFERENCES po
 ALTER TABLE trading ADD FOREIGN KEY (cargo_id) REFERENCES cargo(cargo_id);
 ALTER TABLE trading ADD FOREIGN KEY (shipment_id) REFERENCES shipments(shipment_id);
 
-CREATE OR REPLACE FUNCTION departure_mismatches()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
+CREATE OR REPLACE FUNCTION check_shipment_for_mismatches ()
+    RETURNS TRIGGER
+    LANGUAGE plpgsql
+    AS $function$
+DECLARE
+    passengers_count_filled BOOLEAN := TRUE;
+    volume_count_filled BOOLEAN := TRUE;
 BEGIN
-    RETURN (
+    IF NEW.departed = FALSE THEN
+        RETURN NEW;
+    END IF;
+
+    IF NEW.passengers <> (
         SELECT
+            passengers_capacity
+        FROM
+            ships
+        WHERE
+            ship_id = NEW.ship_id) THEN
+        passengers_count_filled := FALSE;
+    END IF;
+
+    IF (SELECT
             COUNT(*)
         FROM
             ships
-        NATURAL JOIN (
-            SELECT
-                shipment_id,
-                ship_id,
-                passengers,
-                SUM(A.volume_cargo) AS volume_shipment
-            FROM
-                shipments
-                NATURAL
-                LEFT OUTER JOIN (
-                    SELECT
-                        shipment_id,
-                        cargo_id,
-                        quantity * volume AS volume_cargo
-                    FROM
-                        cargo
-                        NATURAL JOIN products) AS A
-                GROUP BY
-                    shipment_id,
+            NATURAL JOIN (
+                SELECT
                     ship_id,
-                    passengers) AS B
-            WHERE
-                B.passengers <> passengers_capacity
-                AND B.volume_shipment <> tonnage_capacity);
+                    SUM(A.volume_cargo) AS volume_shipment
+                FROM
+                    shipments
+                    NATURAL
+                    LEFT OUTER JOIN (
+                        SELECT
+                            shipment_id,
+                            cargo_id,
+                            quantity * volume AS volume_cargo
+                        FROM
+                            cargo
+                            NATURAL JOIN products
+                        WHERE
+                            shipment_id = NEW.shipment_id) AS A
+                    WHERE
+                        shipment_id = NEW.shipment_id
+                    GROUP BY
+                        shipment_id) AS B
+        WHERE
+            tonnage_capacity = B.volume_shipment) <> 1 THEN
+        volume_count_filled := FALSE;
+    END IF;
+
+    IF passengers_count_filled = FALSE AND volume_count_filled = FALSE THEN
+        RAISE EXCEPTION 'Shipment % doesn''t respect the requirements to departure!', NEW.shipment_id;
+    END IF;
+
+    RETURN NEW;
 END;
 $function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_departure CHECK (departed = FALSE OR departure_mismatches() = 0);
-
-
-CREATE OR REPLACE FUNCTION categorized_total()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-            COUNT(*)
-        FROM
-            products as P
-        WHERE NOT EXISTS (SELECT *
-                         FROM food as F,clothes as C,material as M
-                         WHERE P.product_id = F.product_id
-                         OR P.product_id = C.product_id
-                         OR P.product_id = M.product_id));
-END;
-$function$;
-
-ALTER TABLE products ADD CONSTRAINT check_total CHECK (categorized = FALSE OR categorized_total() = 0);
-
-
-CREATE OR REPLACE FUNCTION categorized_disjointed()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-            COUNT(*)
-        FROM ((SELECT F.product_id
-        	 FROM food as F,clothes as C
-        	 WHERE F.product_id = C.product_id
-             UNION
-             SELECT F.product_id
-        	 FROM food as F,material as M
-        	 WHERE F.product_id = M.product_id)
-             UNION
-             SELECT C.product_id
-        	 FROM clothes as C,material as M
-        	 WHERE C.product_id = M.product_id) as FCM);
-END;
-$function$;
-
-ALTER TABLE products ADD CONSTRAINT check_disjointed CHECK (categorized = FALSE OR categorized_disjointed() = 0);
-
-
-CREATE OR REPLACE FUNCTION category_mismatches_shipment()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-             COUNT(*)
-        FROM
-            (SELECT *
-            FROM(SELECT *
-                 FROM shipments
-                 NATURAL JOIN ships) as S
-            JOIN ports
-            ON port_name = S.port_name_start
-            AND port_country_name = S.port_country_name_start
-            WHERE ship_category > port_category
-            UNION
-            SELECT *
-            FROM(SELECT *
-                 FROM shipments
-                 NATURAL JOIN ships) as S
-            JOIN ports
-            ON port_name = S.port_name_end
-            AND port_country_name = S.port_country_name_end
-            WHERE ship_category > port_category) as C);
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_category CHECK (category_mismatches_shipment() = 0);
-
-
-CREATE OR REPLACE FUNCTION category_mismatches_trading()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-             COUNT(*)
-        FROM(SELECT *
-             FROM shipments
-             NATURAL JOIN ships) as S
-        JOIN(SELECT *
-             FROM ports
-             NATURAL JOIN trading) as S1
-        ON S1.shipment_id = S.shipment_id
-        WHERE ship_category > port_category);
-END;
-$function$;
-
-ALTER TABLE trading ADD CONSTRAINT check_category CHECK (category_mismatches_trading() = 0);
-
-
-CREATE OR REPLACE FUNCTION type_mismatches()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT COUNT(*)
-        FROM
-            (SELECT *
-            FROM shipments
-            WHERE shipment_type = 'court'
-            AND distance >= 1000
-            UNION
-            SELECT *
-            FROM shipments
-            WHERE shipment_type = 'moyen'
-            AND (distance < 1000 OR distance >= 2000)
-            UNION
-            SELECT *
-            FROM shipments
-            WHERE shipment_type = 'long'
-            AND distance < 2000) as D);
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_type CHECK (type_mismatches() = 0);
-
-
-CREATE OR REPLACE FUNCTION class_mismatches_Intercontinental()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-             COUNT(*)
-        FROM shipments
-        NATURAL JOIN ships
-        WHERE class = 'Intercontinental'
-        AND ship_category <> 5);
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_class_Intercontinental CHECK (class_mismatches_Intercontinental() = 0);
-
-
-CREATE OR REPLACE FUNCTION class_mismatches_Intercontinental2()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-             COUNT(*)
-        FROM shipments
-        WHERE class = 'Intercontinental'
-        AND distance < 1000);
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_class_Intercontinental2 CHECK (class_mismatches_Intercontinental2() = 0);
-
-
-CREATE OR REPLACE FUNCTION class_mismatches()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-             COUNT(*)
-        FROM shipments
-        JOIN countries
-        ON country_name = port_country_name_end
-        WHERE class <> 'Intercontinental'
-        AND class <> continent);
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_class CHECK (class_mismatches() = 0);
-
-
-CREATE OR REPLACE FUNCTION leg_mismatches()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-             COUNT(*)
-        FROM shipments as S
-        WHERE NOT EXISTS (SELECT *
-                          FROM shipments
-                          NATURAL JOIN legs
-                          WHERE distance > 2000
-                          AND S.shipment_id = shipment_id
-                          AND traveled_distance <= (distance/2 + 500)
-                          AND traveled_distance >= (distance/2 - 500))
-        AND distance > 2000);
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_leg CHECK (departed = FALSE OR leg_mismatches() = 0);
-
-
-CREATE OR REPLACE FUNCTION volume_mismatches()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-            COUNT(*)
-        FROM
-            ships
-        NATURAL JOIN (
-            SELECT
-                shipment_id,
-                ship_id,
-                passengers,
-                SUM(A.volume_cargo) AS volume_shipment
-            FROM
-                shipments
-                NATURAL
-                LEFT OUTER JOIN (
-                    SELECT
-                        shipment_id,
-                        cargo_id,
-                        quantity * volume AS volume_cargo
-                    FROM
-                        cargo
-                        NATURAL JOIN products) AS A
-                GROUP BY
-                    shipment_id,
-                    ship_id,
-                    passengers) AS B
-            WHERE
-                B.volume_shipment > tonnage_capacity);
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_volume CHECK (departed = FALSE OR volume_mismatches() = 0);
-
-
-CREATE OR REPLACE FUNCTION date_mismatches()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-            COUNT(*)
-        FROM shipments as S1
-        JOIN shipments as S2
-        ON S1.ship_id = S2.ship_id
-        WHERE S1.end_date IS NOT NULL
-        and S2.start_date < (S1.end_date + '14 day'::interval)::date
-        and S2.start_date > S1.start_date );
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_date CHECK (date_mismatches() = 0);
-
-
+ 
+CREATE TRIGGER trigger_shipment_for_mismatches
+   AFTER INSERT OR UPDATE OF departed ON shipments
+   FOR EACH ROW
+   EXECUTE PROCEDURE check_shipment_for_mismatches();
 
 \i 'load.sql';

@@ -636,3 +636,5 @@ INSERT INTO trading (cargo_id, shipment_id, port_name, port_country_name, sold, 
 (15, 6, 'port5', 'Royaume du Kongo', 4, 4),
 (18, 7, 'port5', 'Empire cherifien', 2, 0),
 (18, 7, 'port5', 'Royaume de France', 1, 3);
+
+UPDATE shipments SET departed = TRUE WHERE shipment_id >= 0;
