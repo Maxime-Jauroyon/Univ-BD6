@@ -71,7 +71,7 @@ CREATE TABLE ports (
     port_country_name text NOT NULL,
     latitude float8 NOT NULL,
     longitude float8 NOT NULL,
-    category int4 NOT NULL,
+    port_category int4 NOT NULL,
     PRIMARY KEY (port_name, port_country_name)
 );
 
@@ -80,6 +80,7 @@ CREATE TABLE products (
     name text NOT NULL,
     volume int4 NOT NULL,
     perishable bool NOT NULL,
+    categorized bool NOT NULL DEFAULT FALSE,
     PRIMARY KEY (product_id)
 );
 
@@ -105,7 +106,7 @@ CREATE TABLE shipments (
 CREATE TABLE ships (
     ship_id int4 NOT NULL,
     type text NOT NULL,
-    category int4 NOT NULL,
+    ship_category int4 NOT NULL,
     tonnage_capacity int4 NOT NULL,
     passengers_capacity int4 NOT NULL,
     PRIMARY KEY (ship_id)
@@ -185,5 +186,105 @@ END;
 $function$;
 
 ALTER TABLE shipments ADD CONSTRAINT check_departure CHECK (departed = FALSE OR departure_mismatches() = 0);
+
+
+CREATE OR REPLACE FUNCTION categorized_total()
+ RETURNS integer
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    RETURN (
+        SELECT
+            COUNT(*)
+        FROM
+            products as P
+        WHERE NOT EXISTS (SELECT *
+                         FROM food as F,clothes as C,material as M
+                         WHERE P.product_id = F.product_id
+                         OR P.product_id = C.product_id
+                         OR P.product_id = M.product_id));
+END;
+$function$;
+
+ALTER TABLE products ADD CONSTRAINT check_total CHECK (categorized = FALSE OR categorized_total() = 0);
+
+
+CREATE OR REPLACE FUNCTION categorized_disjointed()
+ RETURNS integer
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    RETURN (
+        SELECT
+            COUNT(*)
+        FROM ((SELECT F.product_id
+        	 FROM food as F,clothes as C
+        	 WHERE F.product_id = C.product_id
+             UNION
+             SELECT F.product_id
+        	 FROM food as F,material as M
+        	 WHERE F.product_id = M.product_id)
+             UNION
+             SELECT C.product_id
+        	 FROM clothes as C,material as M
+        	 WHERE C.product_id = M.product_id) as FCM);
+END;
+$function$;
+
+ALTER TABLE products ADD CONSTRAINT check_disjointed CHECK (categorized = FALSE OR categorized_disjointed() = 0);
+
+
+CREATE OR REPLACE FUNCTION category_mismatches_shipment()
+ RETURNS integer
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    RETURN (
+        SELECT
+             COUNT(*)
+        FROM
+            (SELECT *
+            FROM(SELECT *
+                 FROM shipments
+                 NATURAL JOIN ships) as S
+            JOIN ports
+            ON port_name = S.port_name_start
+            AND port_country_name = S.port_country_name_start
+            WHERE ship_category > port_category
+            UNION
+            SELECT *
+            FROM(SELECT *
+                 FROM shipments
+                 NATURAL JOIN ships) as S
+            JOIN ports
+            ON port_name = S.port_name_end
+            AND port_country_name = S.port_country_name_end
+            WHERE ship_category > port_category) as C);
+END;
+$function$;
+
+ALTER TABLE shipments ADD CONSTRAINT check_category CHECK (category_mismatches_shipment() = 0);
+
+
+CREATE OR REPLACE FUNCTION category_mismatches_trading()
+ RETURNS integer
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    RETURN (
+        SELECT
+             COUNT(*)
+        FROM(SELECT *
+             FROM shipments
+             NATURAL JOIN ships) as S
+        JOIN(SELECT *
+             FROM ports
+             NATURAL JOIN trading) as S1
+        ON S1.shipment_id = S.shipment_id
+        WHERE ship_category > port_category);
+END;
+$function$;
+
+ALTER TABLE trading ADD CONSTRAINT check_category CHECK (category_mismatches_trading() = 0);
 
 \i 'load.sql';

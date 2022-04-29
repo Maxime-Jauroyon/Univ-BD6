@@ -1,32 +1,32 @@
-INSERT INTO products (product_id, name, volume, perishable) VALUES
-(1, 'Bois', 50, FALSE),
-(2, 'Poisson', 10, TRUE),
-(3, 'Eau-de-vie', 10, FALSE),
-(4, 'Vetements de travailleur', 10, FALSE),
-(5, 'Cuir', 30, FALSE),
-(6, 'Saucisse', 10, TRUE),
-(7, 'Pain', 10, TRUE),
-(8, 'Voile', 40, FALSE),
-(9, 'Fer', 100, FALSE),
-(10, 'Acier', 120, FALSE),
-(11, 'Savon', 10, FALSE),
-(12, 'Fusils', 40, FALSE),
-(13, 'Charbon', 20, FALSE),
-(14, 'Biere', 10, FALSE),
-(15, 'Rhum', 10, FALSE),
-(16, 'Pierre', 20, FALSE),
-(17, 'Manteau en fourrure', 10, FALSE),
-(18, 'Bottes de marin', 10, FALSE),
-(19, 'Montre a gousset', 2, FALSE),
-(20, 'Verre', 30, FALSE),
-(21, 'Sable', 40, FALSE),
-(22, 'Indigo', 10, FALSE),
-(23, 'Coton', 10, FALSE),
-(24, 'Steak', 20, TRUE),
-(25, 'Collier en or', 1, FALSE),
-(26, 'Ble', 20, TRUE),
-(27, 'Riz', 20, TRUE),
-(28, 'Viande sechee', 10, TRUE);
+INSERT INTO products (product_id, name, volume, perishable, categorized) VALUES
+(1, 'Bois', 50, FALSE, FALSE),
+(2, 'Poisson', 10, TRUE, FALSE),
+(3, 'Eau-de-vie', 10, FALSE, FALSE),
+(4, 'Vetements de travailleur', 10, FALSE, FALSE),
+(5, 'Cuir', 30, FALSE, FALSE),
+(6, 'Saucisse', 10, TRUE, FALSE),
+(7, 'Pain', 10, TRUE, FALSE),
+(8, 'Voile', 40, FALSE, FALSE),
+(9, 'Fer', 100, FALSE, FALSE),
+(10, 'Acier', 120, FALSE, FALSE),
+(11, 'Savon', 10, FALSE, FALSE),
+(12, 'Fusils', 40, FALSE, FALSE),
+(13, 'Charbon', 20, FALSE, FALSE),
+(14, 'Biere', 10, FALSE, FALSE),
+(15, 'Rhum', 10, FALSE, FALSE),
+(16, 'Pierre', 20, FALSE, FALSE),
+(17, 'Manteau en fourrure', 10, FALSE, FALSE),
+(18, 'Bottes de marin', 10, FALSE, FALSE),
+(19, 'Montre a gousset', 2, FALSE, FALSE),
+(20, 'Verre', 30, FALSE, FALSE),
+(21, 'Sable', 40, FALSE, FALSE),
+(22, 'Indigo', 10, FALSE, FALSE),
+(23, 'Coton', 10, FALSE, FALSE),
+(24, 'Steak', 20, TRUE, FALSE),
+(25, 'Collier en or', 1, FALSE, FALSE),
+(26, 'Ble', 20, TRUE, FALSE),
+(27, 'Riz', 20, TRUE, FALSE),
+(28, 'Viande sechee', 10, TRUE, FALSE);
 
 INSERT INTO clothes (product_id, material, unit_price, unit_weight) VALUES
 (4, 'Chanvre', 2, 0.45),
@@ -99,7 +99,7 @@ INSERT INTO diplomatic_relationships (country_name_1, country_name_2, type) VALU
 ('Perse', 'Cambodge', 'Allies'),
 ('Royaume de France', 'Confederation Suisse', 'Allies commerciaux');
 
-INSERT INTO ports (port_name, port_country_name, latitude, longitude, category) VALUES
+INSERT INTO ports (port_name, port_country_name, latitude, longitude, port_category) VALUES
 ('port1', 'Angleterre', -1.234, 1.234, 1),
 ('port1', 'Brandebourg-Prusse', -1.234, 1.234, 1),
 ('port1', 'Cambodge', -1.234, 1.234, 1),
@@ -260,7 +260,7 @@ INSERT INTO ports (port_name, port_country_name, latitude, longitude, category) 
 ('port5', 'Suede', -5.678, 5.678, 5),
 ('port5', 'Tsarat de Russie', -5.678, 5.678, 5);
 
-INSERT INTO ships (ship_id, type, category, tonnage_capacity, passengers_capacity) VALUES
+INSERT INTO ships (ship_id, type, ship_category, tonnage_capacity, passengers_capacity) VALUES
 (11, 'Chaloupe', 1, 200, 20),
 (12, 'Corvette', 2, 300, 40),
 (13, 'Fregate', 3, 300, 60),
@@ -592,7 +592,7 @@ INSERT INTO shipments (shipment_id, ship_id, port_name_start, port_name_end, por
 (3, 103, 'port4', 'port3', 'Perse', 'Dynastie Joseon', '1700-06-02', '1700-07-02', 30, 53, 'moyen', 'Asie', NULL, 1671, FALSE),
 (4, 193, 'port3', 'port5', 'Royaume de Portugal', 'Danemark-Norvege', '1700-02-21', '1700-03-30', 38, 60, 'moyen', 'Europe', NULL, 1238, FALSE),
 (5, 44, 'port5', 'port4', 'Japon', 'Empire ottoman', '1700-05-12', '1700-06-28', 47, 57, 'long', 'Asie', NULL, 2390, FALSE),
-(6, 65, 'port4', 'port5', 'Empire espagnol', 'Lan Xang', '1700-09-06', '1700-10-20', 45, 60, 'long', 'Intercontinental', NULL, 2109, FALSE),
+(6, 65, 'port5', 'port5', 'Empire espagnol', 'Lan Xang', '1700-09-06', '1700-10-20', 45, 60, 'long', 'Intercontinental', NULL, 2109, FALSE),
 (7, 55, 'port5', 'port5', 'Empire ottoman', 'Royaume du Kongo', '1700-06-02', NULL, NULL, 86, 'long', 'Intercontinental', '1700-07-07', 2763, FALSE),
 (8, 12, 'port4', 'port2', 'Dynastie Qing', 'Dynastie Joseon', '1700-02-05', NULL, NULL, 40, 'court', 'Asie', '1700-02-13', 948, FALSE);
 
@@ -632,7 +632,7 @@ INSERT INTO trading (cargo_id, shipment_id, port_name, port_country_name, sold, 
 (10, 4, 'port3', 'Danemark-Norvege', 3, 0),
 (12, 4, 'port3', 'Danemark-Norvege', 10, 5),
 (13, 5, 'port4', 'Dynastie Qing', 50, 10),
-(14, 6, 'port2', 'Empire moghol', 12, 0),
-(15, 7, 'port1', 'Royaume du Kongo', 4, 4),
-(18, 7, 'port2', 'Royaume du Kongo', 2, 0),
-(18, 7, 'port3', 'Royaume du Kongo', 1, 3);
+(14, 6, 'port5', 'Dai Viet', 12, 0),
+(15, 6, 'port5', 'Royaume du Kongo', 4, 4),
+(18, 7, 'port5', 'Empire cherifien', 2, 0),
+(18, 7, 'port5', 'Royaume de France', 1, 3);
