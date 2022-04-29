@@ -1,3 +1,4 @@
+-- Inserts all data.
 INSERT INTO countries (country_name, continent) VALUES
 ('Angleterre', 'Europe'),
 ('Brandebourg-Prusse', 'Europe'),
@@ -598,7 +599,7 @@ INSERT INTO clothes (product_id, material, unit_price, unit_weight) VALUES
 (19, 'Argent', 54, 0.152),
 (25, 'Or', 102, 0.202);
 
-INSERT INTO material (product_id, volume_price) VALUES
+INSERT INTO materials (product_id, volume_price) VALUES
 (1, 12),
 (8, 16),
 (10, 24),
@@ -648,4 +649,6 @@ INSERT INTO trading (cargo_id, shipment_id, port_name, port_country_name, sold, 
 (18, 7, 'port5', 'Empire cherifien', 2, 0),
 (18, 7, 'port5', 'Royaume de France', 1, 3);
 
+-- Updates necessary tables to fulfill the constraint requirements.
 UPDATE shipments SET departed = TRUE WHERE shipment_id >= 1;
+UPDATE products SET categorized = TRUE WHERE product_id >= 1;
