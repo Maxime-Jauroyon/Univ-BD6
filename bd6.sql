@@ -431,4 +431,26 @@ $function$;
 
 ALTER TABLE shipments ADD CONSTRAINT check_volume CHECK (departed = FALSE OR volume_mismatches() = 0);
 
+
+CREATE OR REPLACE FUNCTION date_mismatches()
+ RETURNS integer
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    RETURN (
+        SELECT
+            COUNT(*)
+        FROM shipments as S1
+        JOIN shipments as S2
+        ON S1.ship_id = S2.ship_id
+        WHERE S1.end_date IS NOT NULL
+        and S2.start_date < (S1.end_date + '14 day'::interval)::date
+        and S2.start_date > S1.start_date );
+END;
+$function$;
+
+ALTER TABLE shipments ADD CONSTRAINT check_date CHECK (date_mismatches() = 0);
+
+
+
 \i 'load.sql';
