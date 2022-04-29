@@ -1,58 +1,3 @@
-INSERT INTO products (product_id, name, volume, perishable, categorized) VALUES
-(1, 'Bois', 50, FALSE, FALSE),
-(2, 'Poisson', 10, TRUE, FALSE),
-(3, 'Eau-de-vie', 10, FALSE, FALSE),
-(4, 'Vetements de travailleur', 10, FALSE, FALSE),
-(5, 'Cuir', 30, FALSE, FALSE),
-(6, 'Saucisse', 10, TRUE, FALSE),
-(7, 'Pain', 10, TRUE, FALSE),
-(8, 'Voile', 40, FALSE, FALSE),
-(9, 'Fer', 100, FALSE, FALSE),
-(10, 'Acier', 120, FALSE, FALSE),
-(11, 'Savon', 10, FALSE, FALSE),
-(12, 'Fusils', 40, FALSE, FALSE),
-(13, 'Charbon', 20, FALSE, FALSE),
-(14, 'Biere', 10, FALSE, FALSE),
-(15, 'Rhum', 10, FALSE, FALSE),
-(16, 'Pierre', 20, FALSE, FALSE),
-(17, 'Manteau en fourrure', 10, FALSE, FALSE),
-(18, 'Bottes de marin', 10, FALSE, FALSE),
-(19, 'Montre a gousset', 2, FALSE, FALSE),
-(20, 'Verre', 30, FALSE, FALSE),
-(21, 'Sable', 40, FALSE, FALSE),
-(22, 'Indigo', 10, FALSE, FALSE),
-(23, 'Coton', 10, FALSE, FALSE),
-(24, 'Steak', 20, TRUE, FALSE),
-(25, 'Collier en or', 1, FALSE, FALSE),
-(26, 'Ble', 20, TRUE, FALSE),
-(27, 'Riz', 20, TRUE, FALSE),
-(28, 'Viande sechee', 10, TRUE, FALSE);
-
-INSERT INTO clothes (product_id, material, unit_price, unit_weight) VALUES
-(4, 'Chanvre', 2, 0.45),
-(17, 'Fourrure', 38, 2.2),
-(18, 'Cuir', 6, 0.321),
-(19, 'Argent', 54, 0.152),
-(25, 'Or', 102, 0.202);
-
-INSERT INTO food (product_id, shelf_life, price_per_kg) VALUES
-(2, 3, 24),
-(6, 7, 18),
-(7, 7, 8),
-(24, 7, 47),
-(26, 730, 15),
-(27, 730, 17),
-(28, 14, 20);
-
-INSERT INTO material (product_id, volume_price) VALUES
-(1, 12),
-(8, 16),
-(10, 24),
-(16, 13),
-(20, 21),
-(21, 8),
-(23, 41);
-
 INSERT INTO countries (country_name, continent) VALUES
 ('Angleterre', 'Europe'),
 ('Brandebourg-Prusse', 'Europe'),
@@ -607,6 +552,72 @@ INSERT INTO legs (shipment_id, port_name, port_country_name, offloaded_passenger
 (7, 'port5', 'Empire cherifien', 35, 20, 1823),
 (7, 'port5', 'Royaume de France', 47, 32, 872);
 
+INSERT INTO products (product_id, name, volume, perishable, categorized) VALUES
+(1, 'Bois', 50, FALSE, FALSE),
+(2, 'Poisson', 10, TRUE, FALSE),
+(3, 'Eau-de-vie', 10, FALSE, FALSE),
+(4, 'Vetements de travailleur', 10, FALSE, FALSE),
+(5, 'Cuir', 30, FALSE, FALSE),
+(6, 'Saucisse', 10, TRUE, FALSE),
+(7, 'Pain', 10, TRUE, FALSE),
+(8, 'Voile', 40, FALSE, FALSE),
+(9, 'Fer', 100, FALSE, FALSE),
+(10, 'Acier', 120, FALSE, FALSE),
+(11, 'Savon', 10, FALSE, FALSE),
+(12, 'Fusils', 40, FALSE, FALSE),
+(13, 'Charbon', 20, FALSE, FALSE),
+(14, 'Biere', 10, FALSE, FALSE),
+(15, 'Rhum', 10, FALSE, FALSE),
+(16, 'Pierre', 20, FALSE, FALSE),
+(17, 'Manteau en fourrure', 10, FALSE, FALSE),
+(18, 'Bottes de marin', 10, FALSE, FALSE),
+(19, 'Montre a gousset', 2, FALSE, FALSE),
+(20, 'Verre', 30, FALSE, FALSE),
+(21, 'Sable', 40, FALSE, FALSE),
+(22, 'Indigo', 10, FALSE, FALSE),
+(23, 'Coton', 10, FALSE, FALSE),
+(24, 'Steak', 20, TRUE, FALSE),
+(25, 'Collier en or', 1, FALSE, FALSE),
+(26, 'Ble', 20, TRUE, FALSE),
+(27, 'Riz', 20, TRUE, FALSE),
+(28, 'Viande sechee', 10, TRUE, FALSE);
+
+INSERT INTO food (product_id, shelf_life, price_per_kg) VALUES
+(2, 3, 24),
+(6, 7, 18),
+(7, 7, 8),
+(24, 7, 47),
+(26, 730, 15),
+(27, 730, 17),
+(28, 14, 20);
+
+INSERT INTO clothes (product_id, material, unit_price, unit_weight) VALUES
+(4, 'Chanvre', 2, 0.45),
+(17, 'Fourrure', 38, 2.2),
+(18, 'Cuir', 6, 0.321),
+(19, 'Argent', 54, 0.152),
+(25, 'Or', 102, 0.202);
+
+INSERT INTO material (product_id, volume_price) VALUES
+(1, 12),
+(8, 16),
+(10, 24),
+(16, 13),
+(20, 21),
+(21, 8),
+(23, 41);
+
+INSERT INTO misc (product_id) VALUES
+(3),
+(5),
+(9),
+(11),
+(12),
+(13),
+(14),
+(15),
+(22);
+
 INSERT INTO cargo (cargo_id, shipment_id, product_id, quantity) VALUES
 (2, 1, 3, 2),
 (3, 1, 7, 2),
@@ -637,4 +648,4 @@ INSERT INTO trading (cargo_id, shipment_id, port_name, port_country_name, sold, 
 (18, 7, 'port5', 'Empire cherifien', 2, 0),
 (18, 7, 'port5', 'Royaume de France', 1, 3);
 
-UPDATE shipments SET departed = TRUE WHERE shipment_id >= 0;
+UPDATE shipments SET departed = TRUE WHERE shipment_id >= 1;
