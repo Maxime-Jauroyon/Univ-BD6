@@ -316,7 +316,7 @@ $function$;
 ALTER TABLE shipments ADD CONSTRAINT check_type CHECK (type_mismatches() = 0);
 
 
-CREATE OR REPLACE FUNCTION category_mismatches_Intercontinental()
+CREATE OR REPLACE FUNCTION class_mismatches_Intercontinental()
  RETURNS integer
  LANGUAGE plpgsql
 AS $function$
@@ -331,10 +331,10 @@ BEGIN
 END;
 $function$;
 
-ALTER TABLE shipments ADD CONSTRAINT check_category_Intercontinental CHECK (category_mismatches_Intercontinental() = 0);
+ALTER TABLE shipments ADD CONSTRAINT check_class_Intercontinental CHECK (class_mismatches_Intercontinental() = 0);
 
 
-CREATE OR REPLACE FUNCTION category_mismatches_Intercontinental2()
+CREATE OR REPLACE FUNCTION class_mismatches_Intercontinental2()
  RETURNS integer
  LANGUAGE plpgsql
 AS $function$
@@ -348,6 +348,25 @@ BEGIN
 END;
 $function$;
 
-ALTER TABLE shipments ADD CONSTRAINT check_category_Intercontinental2 CHECK (category_mismatches_Intercontinental2() = 0);
+ALTER TABLE shipments ADD CONSTRAINT check_class_Intercontinental2 CHECK (class_mismatches_Intercontinental2() = 0);
+
+
+CREATE OR REPLACE FUNCTION class_mismatches()
+ RETURNS integer
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    RETURN (
+        SELECT
+             COUNT(*)
+        FROM shipments
+        JOIN countries
+        ON country_name = port_country_name_end
+        WHERE class <> 'Intercontinental'
+        AND class <> continent);
+END;
+$function$;
+
+ALTER TABLE shipments ADD CONSTRAINT check_class CHECK (class_mismatches() = 0);
 
 \i 'load.sql';
