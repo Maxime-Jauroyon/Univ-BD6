@@ -611,7 +611,7 @@ INSERT INTO cargo (cargo_id, shipment_id, product_id, quantity) VALUES
 (2, 1, 3, 2),
 (3, 1, 7, 2),
 (4, 1, 26, 1),
-(5, 2, 7, 12),
+(5, 2, 7, 10),
 (6, 2, 6, 3),
 (7, 2, 24, 2),
 (8, 3, 19, 50),
