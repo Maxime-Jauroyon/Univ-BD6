@@ -169,8 +169,8 @@ BEGIN
         RETURN NEW;
     END IF;
 
-    IF NEW.passengers <>
-        (SELECT
+    IF NEW.passengers <> (
+        SELECT
             passengers_capacity
         FROM
             ships
@@ -184,8 +184,8 @@ BEGIN
         FROM
             ships
         WHERE
-            ship_id = NEW.ship_id) <>
-        (SELECT
+            ship_id = NEW.ship_id) <> (
+        SELECT
             SUM(A.volume_of_cargo)
         FROM
             shipments
