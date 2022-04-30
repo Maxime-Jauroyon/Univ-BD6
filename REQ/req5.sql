@@ -1,6 +1,6 @@
 -- Reconstitue les trajets effectués par les bateaux recouvrant des voyages différents, si le bateau est capturer alors c'est la fin du voyage
 
-WITH RECURSIVE travel (
+WITH RECURSIVE shipment (
     ship_id,
     port_name_start,
     port_country_name_start,
@@ -30,7 +30,7 @@ WITH RECURSIVE travel (
         S.end_date
     FROM
         shipments AS S,
-        travel AS T
+        shipment AS T
     WHERE
         S.ship_id = T.ship_id
         AND S.port_name_start = T.port_name_end
@@ -51,4 +51,4 @@ WITH RECURSIVE travel (
 SELECT
     *
 FROM
-    travel;
+    shipment;
