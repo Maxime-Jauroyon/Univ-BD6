@@ -1,9 +1,3 @@
--- Drops every existing triggers.
-DROP TRIGGER IF EXISTS trigger_shipment_for_mismatches on shipments;
-
--- Drops every existing functions.
-DROP FUNCTION IF EXISTS check_shipment_for_mismatches;
-
 -- Drops every existing tables.
 DROP TABLE IF EXISTS trading;
 DROP TABLE IF EXISTS cargo;
@@ -237,7 +231,7 @@ BEGIN
 END;
 $function$;
 
-CREATE TRIGGER trigger_shipment_for_mismatches
+CREATE OR REPLACE TRIGGER trigger_shipment_for_mismatches
    AFTER INSERT OR UPDATE OF departed ON shipments
    FOR EACH ROW
    EXECUTE PROCEDURE check_shipment_for_mismatches();
@@ -251,7 +245,13 @@ CREATE OR REPLACE FUNCTION check_product_for_mismatches()
 DECLARE
     v_is_unique BOOLEAN := TRUE;
 BEGIN
-    IF NEW.categorized = FALSE THEN
+    IF (SELECT
+            categorized
+        FROM
+            products as A
+        WHERE
+            NEW.product_id = A.product_id) = FALSE
+    THEN
         RETURN NEW;
     END IF;
 
@@ -291,15 +291,35 @@ BEGIN
     END IF;
 
     IF v_is_unique = FALSE THEN
-        RAISE EXCEPTION 'Product % doesn''t respect the requirements to be considered categorized!', NEW.product_id;
+        RAISE EXCEPTION 'Product % is present in more than one category!', NEW.product_id;
     END IF;
 
     RETURN NEW;
 END;
 $function$;
 
-CREATE TRIGGER trigger_product_for_mismatches
+CREATE OR REPLACE TRIGGER trigger_product_for_mismatches
    AFTER INSERT OR UPDATE OF categorized ON products
+   FOR EACH ROW
+   EXECUTE PROCEDURE check_product_for_mismatches();
+
+CREATE OR REPLACE TRIGGER trigger_food_for_mismatches
+   AFTER INSERT OR UPDATE OF product_id ON food
+   FOR EACH ROW
+   EXECUTE PROCEDURE check_product_for_mismatches();
+
+CREATE OR REPLACE TRIGGER trigger_clothes_for_mismatches
+   AFTER INSERT OR UPDATE OF product_id ON clothes
+   FOR EACH ROW
+   EXECUTE PROCEDURE check_product_for_mismatches();
+
+CREATE OR REPLACE TRIGGER trigger_materials_for_mismatches
+   AFTER INSERT OR UPDATE OF product_id ON materials
+   FOR EACH ROW
+   EXECUTE PROCEDURE check_product_for_mismatches();
+
+CREATE OR REPLACE TRIGGER trigger_misc_for_mismatches
+   AFTER INSERT OR UPDATE OF product_id ON misc
    FOR EACH ROW
    EXECUTE PROCEDURE check_product_for_mismatches();
 
