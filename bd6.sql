@@ -30,7 +30,7 @@ CREATE TABLE countries (
 CREATE TABLE diplomatic_relationships (
     country_name_1 text NOT NULL,
     country_name_2 text NOT NULL,
-    type text NOT NULL,
+    relation text NOT NULL,
     PRIMARY KEY (country_name_1, country_name_2)
 );
 
@@ -45,7 +45,7 @@ CREATE TABLE ports (
 
 CREATE TABLE ships (
     ship_id int4 NOT NULL,
-    type text NOT NULL,
+    ship_type text NOT NULL,
     ship_category int4 NOT NULL,
     tonnage_capacity int4 NOT NULL,
     passengers_capacity int4 NOT NULL,
@@ -171,17 +171,17 @@ CREATE OR REPLACE FUNCTION check_shipment_for_mismatches()
     LANGUAGE plpgsql
     AS $function$
 DECLARE
-    passengers_capacity INT4;
-    passengers_filled BOOLEAN := TRUE;
-    tonnage_capacity INT4;
-    tonnage INT4;
-    tonnage_filled BOOLEAN := TRUE;
+    v_passengers_capacity INT4;
+    v_passengers_filled BOOLEAN := TRUE;
+    v_tonnage_capacity INT4;
+    v_tonnage INT4;
+    v_tonnage_filled BOOLEAN := TRUE;
 BEGIN
     IF NEW.departed = FALSE THEN
         RETURN NEW;
     END IF;
 
-    passengers_capacity := (
+    v_passengers_capacity := (
         SELECT
             passengers_capacity
         FROM
@@ -189,22 +189,22 @@ BEGIN
         WHERE
             ship_id = NEW.ship_id);
 
-    IF NEW.passengers > passengers_capacity THEN
+    IF NEW.passengers > v_passengers_capacity THEN
         RAISE EXCEPTION 'Shipment % contains too much passengers to depart!', NEW.shipment_id;
     END IF;
 
-    IF NEW.passengers <> passengers_capacity THEN
-        passengers_filled := FALSE;
+    IF NEW.passengers <> v_passengers_capacity THEN
+        v_passengers_filled := FALSE;
     END IF;
 
-    tonnage_capacity := (SELECT
+    v_tonnage_capacity := (SELECT
             tonnage_capacity
         FROM
             ships
         WHERE
             ship_id = NEW.ship_id);
 
-    tonnage := (
+    v_tonnage := (
         SELECT
             SUM(A.volume_of_cargo)
         FROM
@@ -221,15 +221,15 @@ BEGIN
         WHERE
             shipment_id = NEW.shipment_id);
 
-    IF tonnage > tonnage_capacity THEN
+    IF v_tonnage > v_tonnage_capacity THEN
         RAISE EXCEPTION 'Shipment % contains too much merchandises to depart!', NEW.shipment_id;
     END IF;
 
-    IF tonnage <> tonnage_capacity THEN
-        tonnage_filled := FALSE;
+    IF v_tonnage <> v_tonnage_capacity THEN
+        v_tonnage_filled := FALSE;
     END IF;
 
-    IF passengers_filled = FALSE AND tonnage_filled = FALSE THEN
+    IF v_passengers_filled = FALSE AND v_tonnage_filled = FALSE THEN
         RAISE EXCEPTION 'Shipment % is not filled enough to depart!', NEW.shipment_id;
     END IF;
 
@@ -249,7 +249,7 @@ CREATE OR REPLACE FUNCTION check_product_for_mismatches()
     LANGUAGE plpgsql
     AS $function$
 DECLARE
-    is_unique BOOLEAN := TRUE;
+    v_is_unique BOOLEAN := TRUE;
 BEGIN
     IF NEW.categorized = FALSE THEN
         RETURN NEW;
@@ -264,21 +264,21 @@ BEGIN
                 food AS A
             WHERE
                 NEW.product_id = A.product_id
-            UNION
+            UNION ALL
             SELECT
                 product_id
             FROM
                 clothes AS A
             WHERE
                 NEW.product_id = A.product_id
-            UNION
+            UNION ALL
             SELECT
                 product_id
             FROM
                 materials AS A
             WHERE
                 NEW.product_id = A.product_id
-            UNION
+            UNION ALL
             SELECT
                 product_id
             FROM
@@ -287,10 +287,10 @@ BEGIN
                 NEW.product_id = A.product_id
             ) AS DERIVED_TABLE) <> 1
     THEN
-        is_unique := FALSE;
+        v_is_unique := FALSE;
     END IF;
 
-    IF is_unique = FALSE THEN
+    IF v_is_unique = FALSE THEN
         RAISE EXCEPTION 'Product % doesn''t respect the requirements to be considered categorized!', NEW.product_id;
     END IF;
 
@@ -536,7 +536,7 @@ BEGIN
                             WHERE
                                 ship_id = S.ship_id AND start_possesion_date <= S.start_date)) AS S1
                     WHERE
-                        country_name_1 = S1.country_name AND TYPE = 'En guerre') AS S2
+                        country_name_1 = S1.country_name AND relation = 'En guerre') AS S2
         WHERE
             SS.ship_id = S2.ship_id AND (port_country_name_start = S2.country_name_2 OR port_country_name_end = S2.country_name_2));
 END;

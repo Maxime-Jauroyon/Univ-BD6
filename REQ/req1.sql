@@ -5,7 +5,7 @@ SELECT
     A.shipment_id,
     A.raider,
     A.defender_country,
-    TYPE
+    relation
 FROM (
     SELECT
         S.shipment_id,

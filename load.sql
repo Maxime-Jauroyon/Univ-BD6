@@ -33,7 +33,7 @@ INSERT INTO countries (country_name, continent) VALUES
 ('Suede', 'Europe'),
 ('Tsarat de Russie', 'Europe');
 
-INSERT INTO diplomatic_relationships (country_name_1, country_name_2, type) VALUES
+INSERT INTO diplomatic_relationships (country_name_1, country_name_2, relation) VALUES
 ('Cambodge', 'Khanat dzoungar', 'Neutres'),
 ('Cambodge', 'Lan Xang', 'En guerre'),
 ('Cambodge', 'Perse', 'Allies'),
@@ -206,7 +206,7 @@ INSERT INTO ports (port_name, port_country_name, latitude, longitude, port_categ
 ('port5', 'Suede', -5.678, 5.678, 5),
 ('port5', 'Tsarat de Russie', -5.678, 5.678, 5);
 
-INSERT INTO ships (ship_id, type, ship_category, tonnage_capacity, passengers_capacity) VALUES
+INSERT INTO ships (ship_id, ship_type, ship_category, tonnage_capacity, passengers_capacity) VALUES
 (11, 'Chaloupe', 1, 200, 20),
 (12, 'Corvette', 2, 300, 40),
 (13, 'Fregate', 3, 300, 60),
