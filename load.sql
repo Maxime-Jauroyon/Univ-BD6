@@ -19,7 +19,7 @@ INSERT INTO countries (country_name, continent) VALUES
 ('Lan Xang', 'Asie'),
 ('Monarchie de Habsbourg', 'Europe'),
 ('Nepal', 'Asie'),
-('Ordre de Saint-Jean de Jerusalem', ' Asie'),
+('Ordre de Saint-Jean de Jerusalem', 'Asie'),
 ('Perse', 'Asie'),
 ('Province-Unies', 'Europe'),
 ('Republique de Venise', 'Europe'),
@@ -650,5 +650,5 @@ INSERT INTO trading (cargo_id, shipment_id, port_name, port_country_name, sold, 
 (18, 7, 'port5', 'Royaume de France', 1, 3);
 
 -- Updates necessary tables to fulfill the constraint requirements.
-UPDATE shipments SET departed = TRUE WHERE shipment_id >= 1;
-UPDATE products SET categorized = TRUE WHERE product_id >= 1;
+UPDATE shipments SET departed = TRUE;
+UPDATE products SET categorized = TRUE;

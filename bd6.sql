@@ -15,12 +15,15 @@ DROP TABLE IF EXISTS diplomatic_relationships;
 DROP TABLE IF EXISTS countries;
 
 -- Creates every tables.
+
+-- Represents a country within the world.
 CREATE TABLE countries (
     country_name text NOT NULL,
     continent text NOT NULL,
     PRIMARY KEY (country_name)
 );
 
+-- Represents a relationship between two countries.
 CREATE TABLE diplomatic_relationships (
     country_name_1 text NOT NULL,
     country_name_2 text NOT NULL,
@@ -28,6 +31,7 @@ CREATE TABLE diplomatic_relationships (
     PRIMARY KEY (country_name_1, country_name_2)
 );
 
+-- Represents a port within a country.
 CREATE TABLE ports (
     port_name text NOT NULL,
     port_country_name text NOT NULL,
@@ -37,6 +41,7 @@ CREATE TABLE ports (
     PRIMARY KEY (port_name, port_country_name)
 );
 
+-- Represents a ship.
 CREATE TABLE ships (
     ship_id int4 NOT NULL,
     ship_type text NOT NULL,
@@ -46,6 +51,7 @@ CREATE TABLE ships (
     PRIMARY KEY (ship_id)
 );
 
+-- Represents ownership of a ship to a country.
 CREATE TABLE ships_nationalities (
     ship_id int4 NOT NULL,
     country_name text NOT NULL,
@@ -53,6 +59,7 @@ CREATE TABLE ships_nationalities (
     PRIMARY KEY (ship_id, country_name, start_possesion_date)
 );
 
+-- Represents a shipment (= a travel).
 CREATE TABLE shipments (
     shipment_id int4 NOT NULL,
     ship_id int4,
@@ -72,6 +79,7 @@ CREATE TABLE shipments (
     PRIMARY KEY (shipment_id)
 );
 
+-- Represents a leg (= a stop during a travel).
 CREATE TABLE legs (
     shipment_id int4 NOT NULL,
     port_name text NOT NULL,
@@ -82,6 +90,7 @@ CREATE TABLE legs (
     PRIMARY KEY (shipment_id, port_name, port_country_name)
 );
 
+-- Represents a product which can be sold or bought.
 CREATE TABLE products (
     product_id int4 NOT NULL,
     name text NOT NULL,
@@ -91,6 +100,7 @@ CREATE TABLE products (
     PRIMARY KEY (product_id)
 );
 
+-- Represents food (a category of products).
 CREATE TABLE food (
     product_id int4 NOT NULL,
     shelf_life int4 NOT NULL,
@@ -98,6 +108,7 @@ CREATE TABLE food (
     PRIMARY KEY (product_id)
 );
 
+-- Represents a cloth (a category of products).
 CREATE TABLE clothes (
     product_id int4 NOT NULL,
     material text NOT NULL,
@@ -106,17 +117,20 @@ CREATE TABLE clothes (
     PRIMARY KEY (product_id)
 );
 
+-- Represents a material (a category of products).
 CREATE TABLE materials (
     product_id int4 NOT NULL,
     volume_price int4 NOT NULL,
     PRIMARY KEY (product_id)
 );
 
+-- Represents another product (a category of products).
 CREATE TABLE misc (
     product_id int4 NOT NULL,
     PRIMARY KEY (product_id)
 );
 
+-- Represents a cargo (a set of a specific product with a given quantity).
 CREATE TABLE cargo (
     cargo_id int4 NOT NULL,
     shipment_id int4,
@@ -125,6 +139,7 @@ CREATE TABLE cargo (
     PRIMARY KEY (cargo_id)
 );
 
+-- Represents the trading (buying and selling) of parts of a cargo.
 CREATE TABLE trading (
     cargo_id int4 NOT NULL,
     shipment_id int4 NOT NULL,
@@ -158,9 +173,178 @@ ALTER TABLE trading ADD FOREIGN KEY (shipment_id) REFERENCES shipments(shipment_
 
 -- Creates every triggers.
 
--- To depart, a shipment must be filled with passengers and/or filled with merchandises.
+-- A country must exists on a predefined continent.
+-- This raises an exception if a country does not fulfill those necessary conditions.
+CREATE OR REPLACE FUNCTION check_country_continent_for_mismatches()
+    RETURNS TRIGGER
+    LANGUAGE plpgsql
+    AS $function$
+BEGIN
+    IF NEW.continent <> 'Europe' AND
+        NEW.continent <> 'Afrique' AND
+        NEW.continent <> 'Amérique' AND
+        NEW.continent <> 'Asie' AND
+        NEW.continent <> 'Océanie' AND
+        NEW.continent <> 'Antarctique'
+    THEN
+        RAISE EXCEPTION 'Country % cannot be created in an imaginary continent!', NEW.country_name;
+    END IF;
+
+    RETURN NEW;
+END;
+$function$;
+
+CREATE OR REPLACE TRIGGER trigger_country_continent_for_mismatches
+   AFTER INSERT OR UPDATE OF continent ON countries
+   FOR EACH ROW
+   EXECUTE PROCEDURE check_country_continent_for_mismatches();
+
+-- A shipment must:
+-- - Travel a distance that corresponds to its type.
+-- - Start at a port that can handle its ship category.
+-- - End at a port that can handle its ship category.
+-- - Travel a certain distance and have a ship category that supports intercontinal shipment if it is one.
+-- - Have a class ('Intercontinal' or a continent name) that corresponds to its end port.
+-- - Travel at least 14 days after the last shipment of its ship.
+-- - Not travel with perishable good if it isn't a short travel.
+-- - Travel from or to a country with wich its ship's nationality is in war with.
 -- This raises an exception if a shipment does not fulfill those necessary conditions.
 CREATE OR REPLACE FUNCTION check_shipment_for_mismatches()
+    RETURNS TRIGGER
+    LANGUAGE plpgsql
+    AS $function$
+DECLARE
+    v_ship_category INT4;
+BEGIN
+    IF (NEW.shipment_type = 'court' AND NEW.distance >= 1000) OR
+       (NEW.shipment_type = 'moyen' AND (NEW.distance < 1000 OR NEW.distance >= 2000)) OR
+       (NEW.shipment_type = 'long' AND NEW.distance < 2000)
+    THEN
+        RAISE EXCEPTION 'Shipment % travels a distance that does not corresponds to its type!', NEW.shipment_id;
+    END IF;
+
+    v_ship_category := (
+        SELECT
+            ship_category
+        FROM
+            ships
+        WHERE
+            ship_id = NEW.ship_id
+        );
+
+    IF v_ship_category > (
+        SELECT
+            port_category
+        FROM
+            ports
+        WHERE
+            port_name = NEW.port_name_start AND port_country_name = NEW.port_country_name_start)
+    THEN
+        RAISE EXCEPTION 'Shipment % starts at a port that doesn''t support its category!', NEW.shipment_id;
+    END IF;
+
+    IF v_ship_category > (
+        SELECT
+            port_category
+        FROM
+            ports
+        WHERE
+            port_name = NEW.port_name_end AND port_country_name = NEW.port_country_name_end)
+    THEN
+        RAISE EXCEPTION 'Shipment % ends at a port that doesn''t support its category!', NEW.shipment_id;
+    END IF;
+
+    IF NEW.class = 'Intercontinental' AND v_ship_category <> 5 THEN
+        RAISE EXCEPTION 'Shipment % ship''s category does not permit intercontinental shipments!', NEW.shipment_id;
+    END IF;
+
+    IF NEW.class = 'Intercontinental' AND NEW.distance < 1000 THEN
+        RAISE EXCEPTION 'Shipment % travelled distance does not permit intercontinental shipments!', NEW.shipment_id;
+    END IF;
+
+    IF NEW.class <> 'Intercontinental' AND
+        NEW.class <> (
+        SELECT
+            continent
+        FROM
+            countries
+        WHERE
+            continent = NEW.port_country_name_end) 
+    THEN
+        RAISE EXCEPTION 'Shipment % class is not correct!', NEW.shipment_id;
+    END IF;
+
+    IF (SELECT
+            COUNT(*)
+        FROM
+            shipments AS A
+        WHERE
+            NEW.ship_id = A.ship_id AND
+            A.end_date IS NOT NULL AND
+            NEW.start_date < (A.end_date + '14 day'::interval)::date AND
+            NEW.start_date > A.start_date) <> 0
+    THEN
+        RAISE EXCEPTION 'Shipment % ship has travelled too recently to be able to depart so soon!', NEW.shipment_id;
+    END IF;
+
+    IF NEW.shipment_id IN (
+            SELECT
+                shipment_id FROM cargo AS A
+            NATURAL JOIN products
+            WHERE
+                perishable IS TRUE) AND
+        (NEW.shipment_type = 'moyen' OR NEW.shipment_type = 'long')
+    THEN
+        RAISE EXCEPTION 'Shipment % contains perishable good when it shouldn''t!', NEW.shipment_id;
+    END IF;
+
+    IF 0 <> (
+        SELECT
+            COUNT(*)
+        FROM
+            diplomatic_relationships,
+            (
+                SELECT
+                    shipment_id,
+                    ship_id,
+                    country_name
+                FROM (ships_nationalities
+                NATURAL JOIN (
+                    SELECT
+                        *
+                    FROM
+                        ships
+                        NATURAL JOIN shipments) AS F) AS S
+            WHERE
+                start_possesion_date = (
+                    SELECT
+                        MAX(start_possesion_date)
+                    FROM
+                        ships_nationalities
+                    WHERE
+                        ship_id = S.ship_id
+                        AND start_possesion_date <= S.start_date)) AS S1
+        WHERE
+            country_name_1 = S1.country_name AND
+                relation = 'En guerre' AND
+                NEW.ship_id = ship_id AND (
+                    NEW.port_country_name_start = country_name_2 OR NEW.port_country_name_end = country_name_2))
+    THEN
+        RAISE EXCEPTION 'Shipment % starts from or end to a port with wich its ship''s nationality is in war with!', NEW.shipment_id;
+    END IF;
+
+    RETURN NEW;
+END;
+$function$;
+
+CREATE OR REPLACE TRIGGER trigger_shipment_for_mismatches
+   AFTER INSERT OR UPDATE ON shipments
+   FOR EACH ROW
+   EXECUTE PROCEDURE check_shipment_for_mismatches();
+
+-- To depart, a shipment must be filled with passengers and/or filled with merchandises.
+-- This raises an exception if a shipment does not fulfill those necessary conditions.
+CREATE OR REPLACE FUNCTION check_shipment_departure_for_mismatches()
     RETURNS TRIGGER
     LANGUAGE plpgsql
     AS $function$
@@ -227,18 +411,31 @@ BEGIN
         RAISE EXCEPTION 'Shipment % is not filled enough to depart!', NEW.shipment_id;
     END IF;
 
+    IF NEW.distance > 2000 AND (
+        SELECT
+            COUNT(*)
+        FROM
+            legs
+        WHERE
+            NEW.shipment_id = shipment_id
+            AND traveled_distance <= (NEW.distance / 2 + 500)
+            AND traveled_distance >= (NEW.distance / 2 - 500)) = 0
+    THEN
+        RAISE EXCEPTION 'Shipment % should possess at least one leg!', NEW.shipment_id;
+    END IF;
+
     RETURN NEW;
 END;
 $function$;
 
-CREATE OR REPLACE TRIGGER trigger_shipment_for_mismatches
+CREATE OR REPLACE TRIGGER trigger_shipment_departure_for_mismatches
    AFTER INSERT OR UPDATE OF departed ON shipments
    FOR EACH ROW
-   EXECUTE PROCEDURE check_shipment_for_mismatches();
+   EXECUTE PROCEDURE check_shipment_departure_for_mismatches();
 
 -- To be categorized, a product must be present in exactly one category.
 -- This raises an exception if a product does not fulfill those necessary conditions.
-CREATE OR REPLACE FUNCTION check_product_for_mismatches()
+CREATE OR REPLACE FUNCTION check_product_category_for_mismatches()
     RETURNS TRIGGER
     LANGUAGE plpgsql
     AS $function$
@@ -298,271 +495,68 @@ BEGIN
 END;
 $function$;
 
-CREATE OR REPLACE TRIGGER trigger_product_for_mismatches
+CREATE OR REPLACE TRIGGER trigger_product_category_for_mismatches
    AFTER INSERT OR UPDATE OF categorized ON products
    FOR EACH ROW
-   EXECUTE PROCEDURE check_product_for_mismatches();
+   EXECUTE PROCEDURE check_product_category_for_mismatches();
 
-CREATE OR REPLACE TRIGGER trigger_food_for_mismatches
+CREATE OR REPLACE TRIGGER trigger_food_category_for_mismatches
    AFTER INSERT OR UPDATE OF product_id ON food
    FOR EACH ROW
-   EXECUTE PROCEDURE check_product_for_mismatches();
+   EXECUTE PROCEDURE check_product_category_for_mismatches();
 
-CREATE OR REPLACE TRIGGER trigger_clothes_for_mismatches
+CREATE OR REPLACE TRIGGER trigger_clothes_category_for_mismatches
    AFTER INSERT OR UPDATE OF product_id ON clothes
    FOR EACH ROW
-   EXECUTE PROCEDURE check_product_for_mismatches();
+   EXECUTE PROCEDURE check_product_category_for_mismatches();
 
-CREATE OR REPLACE TRIGGER trigger_materials_for_mismatches
+CREATE OR REPLACE TRIGGER trigger_materials_category_for_mismatches
    AFTER INSERT OR UPDATE OF product_id ON materials
    FOR EACH ROW
-   EXECUTE PROCEDURE check_product_for_mismatches();
+   EXECUTE PROCEDURE check_product_category_for_mismatches();
 
-CREATE OR REPLACE TRIGGER trigger_misc_for_mismatches
+CREATE OR REPLACE TRIGGER trigger_misc_category_for_mismatches
    AFTER INSERT OR UPDATE OF product_id ON misc
    FOR EACH ROW
-   EXECUTE PROCEDURE check_product_for_mismatches();
+   EXECUTE PROCEDURE check_product_category_for_mismatches();
 
--- TODO: REFACTOR
-
-CREATE OR REPLACE FUNCTION category_mismatches_shipment()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
+-- A trading must happen on a port that support its ship category.
+-- This raises an exception if a trading does not fulfill those necessary conditions.
+CREATE OR REPLACE FUNCTION check_trading_port_for_mismatches()
+    RETURNS TRIGGER
+    LANGUAGE plpgsql
+    AS $function$
 BEGIN
-    RETURN (
-        SELECT
-             COUNT(*)
+    IF (SELECT
+            ship_category
         FROM
-            (SELECT *
-            FROM(SELECT *
-                 FROM shipments
-                 NATURAL JOIN ships) as S
-            JOIN ports
-            ON port_name = S.port_name_start
-            AND port_country_name = S.port_country_name_start
-            WHERE ship_category > port_category
-            UNION
-            SELECT *
-            FROM(SELECT *
-                 FROM shipments
-                 NATURAL JOIN ships) as S
-            JOIN ports
-            ON port_name = S.port_name_end
-            AND port_country_name = S.port_country_name_end
-            WHERE ship_category > port_category) as C);
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_category CHECK (category_mismatches_shipment() = 0);
-
-CREATE OR REPLACE FUNCTION category_mismatches_trading()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-             COUNT(*)
-        FROM(SELECT *
-             FROM shipments
-             NATURAL JOIN ships) as S
-        JOIN(SELECT *
-             FROM ports
-             NATURAL JOIN trading) as S1
-        ON S1.shipment_id = S.shipment_id
-        WHERE ship_category > port_category);
-END;
-$function$;
-
-ALTER TABLE trading ADD CONSTRAINT check_category CHECK (category_mismatches_trading() = 0);
-
-
-CREATE OR REPLACE FUNCTION type_mismatches()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT COUNT(*)
-        FROM
-            (SELECT *
-            FROM shipments
-            WHERE shipment_type = 'court'
-            AND distance >= 1000
-            UNION
-            SELECT *
-            FROM shipments
-            WHERE shipment_type = 'moyen'
-            AND (distance < 1000 OR distance >= 2000)
-            UNION
-            SELECT *
-            FROM shipments
-            WHERE shipment_type = 'long'
-            AND distance < 2000) as D);
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_type CHECK (type_mismatches() = 0);
-
-CREATE OR REPLACE FUNCTION class_mismatches_Intercontinental()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-             COUNT(*)
-        FROM shipments
-        NATURAL JOIN ships
-        WHERE class = 'Intercontinental'
-        AND ship_category <> 5);
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_class_Intercontinental CHECK (class_mismatches_Intercontinental() = 0);
-
-CREATE OR REPLACE FUNCTION class_mismatches_Intercontinental2()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-             COUNT(*)
-        FROM shipments
-        WHERE class = 'Intercontinental'
-        AND distance < 1000);
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_class_Intercontinental2 CHECK (class_mismatches_Intercontinental2() = 0);
-
-
-CREATE OR REPLACE FUNCTION class_mismatches()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-             COUNT(*)
-        FROM shipments
-        JOIN countries
-        ON country_name = port_country_name_end
-        WHERE class <> 'Intercontinental'
-        AND class <> continent);
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_class CHECK (class_mismatches() = 0);
-
-CREATE OR REPLACE FUNCTION leg_mismatches()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-             COUNT(*)
-        FROM shipments as S
-        WHERE NOT EXISTS (SELECT *
-                          FROM shipments
-                          NATURAL JOIN legs
-                          WHERE distance > 2000
-                          AND S.shipment_id = shipment_id
-                          AND traveled_distance <= (distance/2 + 500)
-                          AND traveled_distance >= (distance/2 - 500))
-        AND distance > 2000);
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_leg CHECK (departed = FALSE OR leg_mismatches() = 0);
-
-CREATE OR REPLACE FUNCTION date_mismatches()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-            COUNT(*)
-        FROM shipments as S1
-        JOIN shipments as S2
-        ON S1.ship_id = S2.ship_id
-        WHERE S1.end_date IS NOT NULL
-        and S2.start_date < (S1.end_date + '14 day'::interval)::date
-        and S2.start_date > S1.start_date );
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_date CHECK (date_mismatches() = 0);
-
-CREATE OR REPLACE FUNCTION perishable_mismatches()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
-        SELECT
-            COUNT(*)
-        FROM
-            shipments
+            ships as A
         WHERE
-            shipment_id IN (
-                SELECT
-                    shipment_id FROM cargo AS C
-                NATURAL JOIN products
+            A.ship_id = (
+            SELECT
+                ship_id
+            FROM
+                shipment as B
             WHERE
-                perishable IS TRUE) AND (shipment_type = 'moyen' OR shipment_type = 'long'));
-END;
-$function$;
-
-ALTER TABLE shipments ADD CONSTRAINT check_perishable CHECK (perishable_mismatches() = 0);
-
-CREATE OR REPLACE FUNCTION wars_mismatches()
- RETURNS integer
- LANGUAGE plpgsql
-AS $function$
-BEGIN
-    RETURN (
+                B.shipment_id = NEW.shipment_id)) > (
         SELECT
-            COUNT(*)
+            port_category
         FROM
-            shipments AS SS,
-            (
-                SELECT
-                    *
-                FROM
-                    diplomatic_relationships,
-                    (
-                        SELECT
-                            shipment_id,
-                            ship_id,
-                            country_name
-                        FROM (ships_nationalities
-                        NATURAL JOIN (
-                            SELECT
-                                *
-                            FROM
-                                ships
-                                NATURAL JOIN shipments) AS F) AS S
-                    WHERE
-                        start_possesion_date = (
-                            SELECT
-                                MAX(start_possesion_date)
-                            FROM
-                                ships_nationalities
-                            WHERE
-                                ship_id = S.ship_id AND start_possesion_date <= S.start_date)) AS S1
-                    WHERE
-                        country_name_1 = S1.country_name AND relation = 'En guerre') AS S2
+            ports as A
         WHERE
-            SS.ship_id = S2.ship_id AND (port_country_name_start = S2.country_name_2 OR port_country_name_end = S2.country_name_2));
+            NEW.port_name = A.port_name AND NEW.port_country_name = A.port_country_name)
+    THEN
+        RAISE EXCEPTION 'Trading % happens in a port that doesn''t support its ship!', NEW.shipment_id;
+    END IF;
+
+    RETURN NEW;
 END;
 $function$;
 
-ALTER TABLE shipments ADD CONSTRAINT check_wars CHECK (wars_mismatches() = 0);
+CREATE OR REPLACE TRIGGER trigger_trading_port_for_mismatches
+   AFTER INSERT OR UPDATE OF shipment_id OR UPDATE OF port_name OR UPDATE OF port_country_name ON trading
+   FOR EACH ROW
+   EXECUTE PROCEDURE check_trading_port_for_mismatches();
 
-
+-- Loads the initial set of data.
 \i 'load.sql';
