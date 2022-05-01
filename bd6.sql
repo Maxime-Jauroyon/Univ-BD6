@@ -566,7 +566,7 @@ END;
 $function$;
 
 CREATE TRIGGER trigger_trading_port_for_mismatches
-   AFTER INSERT OR UPDATE OF shipment_id OR UPDATE OF port_name OR UPDATE OF port_country_name ON trading
+   AFTER INSERT OR UPDATE ON trading
    FOR EACH ROW
    EXECUTE PROCEDURE check_trading_port_for_mismatches();
 
