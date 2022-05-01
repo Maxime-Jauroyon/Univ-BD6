@@ -87,6 +87,7 @@ CREATE TABLE legs (
     offloaded_passengers int4 NOT NULL,
     loaded_passengers int4 NOT NULL,
     traveled_distance int4 NOT NULL,
+    arrival_date date NOT NULL,
     PRIMARY KEY (shipment_id, port_name, port_country_name)
 );
 

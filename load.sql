@@ -542,16 +542,16 @@ INSERT INTO shipments (shipment_id, ship_id, port_name_start, port_name_end, por
 (7, 55, 'port5', 'port5', 'Empire ottoman', 'Royaume du Kongo', '1700-06-02', NULL, NULL, 86, 'long', 'Intercontinental', '1700-07-07', 2763, FALSE),
 (8, 12, 'port4', 'port2', 'Dynastie Qing', 'Dynastie Joseon', '1700-02-05', NULL, NULL, 40, 'court', 'Asie', '1700-02-13', 948, FALSE);
 
-INSERT INTO legs (shipment_id, port_name, port_country_name, offloaded_passengers, loaded_passengers, traveled_distance) VALUES
-(3, 'port4', 'Royaume de Ryukyu', 23, 20, 720),
-(4, 'port3', 'Province-Unies', 36, 36, 633),
-(5, 'port4', 'Dynastie Joseon', 24, 27, 1023),
-(5, 'port4', 'Dynastie Qing', 40, 13, 1672),
-(6, 'port5', 'Dai Viet', 39, 50, 1782),
-(6, 'port5', 'Royaume du Kongo', 23, 42, 1429),
-(6, 'port5', 'Saint-Empire romain germanique', 3, 13, 672),
-(7, 'port5', 'Empire cherifien', 35, 20, 1823),
-(7, 'port5', 'Royaume de France', 47, 32, 872);
+INSERT INTO legs (shipment_id, port_name, port_country_name, offloaded_passengers, loaded_passengers, traveled_distance, arrival_date) VALUES
+(3, 'port4', 'Royaume de Ryukyu', 23, 20, 720, '1700-06-20'),
+(4, 'port3', 'Province-Unies', 36, 36, 633, '1700-03-08'),
+(5, 'port4', 'Dynastie Joseon', 24, 27, 1023, '1700-05-22'),
+(5, 'port4', 'Dynastie Qing', 40, 13, 1672, '1700-06-09'),
+(6, 'port5', 'Dai Viet', 39, 50, 1782, '1700-09-18'),
+(6, 'port5', 'Royaume du Kongo', 23, 42, 1429, '1700-09-28'),
+(6, 'port5', 'Saint-Empire romain germanique', 3, 13, 672, '1700-10-10'),
+(7, 'port5', 'Empire cherifien', 35, 20, 1823, '1700-06-09'),
+(7, 'port5', 'Royaume de France', 47, 32, 872, '1700-06-20');
 
 INSERT INTO products (product_id, name, volume, perishable, categorized) VALUES
 (1, 'Bois', 50, FALSE, FALSE),
