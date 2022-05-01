@@ -1,3 +1,14 @@
+-- Drop every existing triggers.
+DROP TRIGGER IF EXISTS trigger_country_continent_for_mismatches ON countries;
+DROP TRIGGER IF EXISTS trigger_shipment_for_mismatches ON shipments;
+DROP TRIGGER IF EXISTS trigger_shipment_departure_for_mismatches ON shipments;
+DROP TRIGGER IF EXISTS trigger_product_category_for_mismatches ON products;
+DROP TRIGGER IF EXISTS trigger_food_category_for_mismatches ON food;
+DROP TRIGGER IF EXISTS trigger_clothes_category_for_mismatches ON clothes;
+DROP TRIGGER IF EXISTS trigger_materials_category_for_mismatches ON materials;
+DROP TRIGGER IF EXISTS trigger_misc_category_for_mismatches ON misc;
+DROP TRIGGER IF EXISTS trigger_trading_port_for_mismatches ON trading;
+
 -- Drops every existing tables.
 DROP TABLE IF EXISTS trading;
 DROP TABLE IF EXISTS cargo;
