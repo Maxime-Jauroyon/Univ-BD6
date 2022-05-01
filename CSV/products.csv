@@ -1,0 +1,28 @@
+1,Bois,50,false,false
+2,Poisson,10,true,false
+3,Eau-de-vie,10,false,false
+4,Vetements de travailleur,10,false,false
+5,Cuir,30,false,false
+6,Saucisse,10,true,false
+7,Pain,10,true,false
+8,Voile,40,false,false
+9,Fer,100,false,false
+10,Acier,120,false,false
+11,Savon,10,false,false
+12,Fusils,40,false,false
+13,Charbon,20,false,false
+14,Biere,10,false,false
+15,Rhum,10,false,false
+16,Pierre,20,false,false
+17,Manteau en fourrure,10,false,false
+18,Bottes de marin,10,false,false
+19,Montre a gousset,2,false,false
+20,Verre,30,false,false
+21,Sable,40,false,false
+22,Indigo,10,false,false
+23,Coton,10,false,false
+24,Steak,20,true,false
+25,Collier en or,1,false,false
+26,Ble,20,true,false
+27,Riz,20,true,false
+28,Viande sechee,10,true,false

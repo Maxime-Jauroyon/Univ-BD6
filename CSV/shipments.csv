@@ -1,0 +1,17 @@
+1,12,port2,port4,Empire moghol,Dynastie Qing,1700-01-01,1700-01-20,20,40,court,Asie,,547,false
+2,71,port1,port3,Royaume de France,Confederation Suisse,1700-10-01,1700-10-16,16,20,court,Europe,,473,false
+3,103,port4,port3,Perse,Dynastie Joseon,1700-06-02,1700-07-02,30,53,moyen,Asie,,1671,false
+4,193,port3,port5,Royaume de Portugal,Danemark-Norvege,1700-02-21,1700-03-30,38,60,moyen,Europe,,1238,false
+5,44,port5,port4,Japon,Empire ottoman,1700-05-12,1700-06-28,47,57,long,Asie,,2390,false
+6,65,port5,port5,Empire espagnol,Lan Xang,1700-09-06,1700-10-20,45,60,long,Intercontinental,,2109,false
+7,55,port5,port5,Empire ottoman,Royaume du Kongo,1700-06-02,,,86,long,Intercontinental,1700-07-07,2763,false
+8,12,port4,port2,Dynastie Qing,Dynastie Joseon,1700-02-05,,,40,court,Asie,1700-02-13,948,false
+9,71,port3,port4,Confederation Suisse,Royaume de France,1700-11-12,1700-11-28,16,20,court,Europe,,451,false
+10,71,port4,port2,Royaume de France,Royaume de France,1700-12-12,1700-12-24,12,20,court,Europe,,312,false
+11,12,port2,port4,Dai Viet,Dynastie Qing,1700-02-28,1700-03-04,4,40,court,Asie,,422,false
+12,75,port5,port5,Empire espagnol,Royaume du Kongo,1701-01-01,1701-02-12,42,100,moyen,Intercontinental,,1012,false
+13,12,port4,port2,Dynastie Qing,Dynastie Qing,1700-03-20,1700-04-02,13,40,court,Asie,,321,false
+14,291,port5,port1,Royaume du Kongo,Royaume du Kongo,1701-01-17,1701-02-10,24,20,court,Afrique,,412,false
+15,291,port1,port3,Royaume du Kongo,Royaume du Kongo,1701-03-10,1701-03-20,10,20,court,Afrique,,308,false
+16,291,port3,port4,Royaume du Kongo,Royaume du Kongo,1701-04-20,1701-05-10,20,20,court,Afrique,,278,false
+17,291,port4,port2,Royaume du Kongo,Royaume du Kongo,1701-05-25,1701-06-20,26,20,court,Afrique,,682,false
