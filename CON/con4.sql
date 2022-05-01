@@ -1,3 +1,5 @@
+-- Checks if every shipments doing an intercontinental travel has a ship of category 5.
+
 CREATE OR REPLACE FUNCTION class_mismatches_Intercontinental()
  RETURNS integer
  LANGUAGE plpgsql

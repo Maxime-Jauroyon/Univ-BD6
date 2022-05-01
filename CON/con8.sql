@@ -1,3 +1,5 @@
+-- Checks if every shipments has a volume that it can sustain before departure.
+
 CREATE OR REPLACE FUNCTION volume_mismatches()
  RETURNS integer
  LANGUAGE plpgsql

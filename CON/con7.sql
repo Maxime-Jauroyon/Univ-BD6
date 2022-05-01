@@ -1,3 +1,5 @@
+-- Checks if every shipments has at least one leg when needed before departure.
+
 CREATE OR REPLACE FUNCTION leg_mismatches()
  RETURNS integer
  LANGUAGE plpgsql

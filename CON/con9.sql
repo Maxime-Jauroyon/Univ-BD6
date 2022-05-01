@@ -1,3 +1,5 @@
+-- Checks if every shipments happens at least 14 days before the previous one of the same ship.
+
 CREATE OR REPLACE FUNCTION date_mismatches()
  RETURNS integer
  LANGUAGE plpgsql

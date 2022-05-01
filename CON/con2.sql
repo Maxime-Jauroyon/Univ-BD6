@@ -1,3 +1,6 @@
+-- Checks if every shipments is starting and leaving from a port with a category
+-- supporting its ship's category.
+
 CREATE OR REPLACE FUNCTION category_mismatches_shipment()
  RETURNS integer
  LANGUAGE plpgsql

@@ -1,3 +1,5 @@
+-- Checks if every shipments has a well defined class.
+
 CREATE OR REPLACE FUNCTION class_mismatches()
  RETURNS integer
  LANGUAGE plpgsql

@@ -1,3 +1,5 @@
+-- Checks if every shipments does not start or end within a country it is in war with.
+
 CREATE OR REPLACE FUNCTION wars_mismatches()
  RETURNS integer
  LANGUAGE plpgsql

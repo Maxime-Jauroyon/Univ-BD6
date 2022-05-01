@@ -1,3 +1,5 @@
+-- Checks if every shipments is filled with passengers and/or merchandises before departure.
+
 CREATE OR REPLACE FUNCTION departure_mismatches()
  RETURNS integer
  LANGUAGE plpgsql

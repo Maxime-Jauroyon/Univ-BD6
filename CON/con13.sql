@@ -1,3 +1,5 @@
+-- Checks if every products categories forms a total set.
+
 CREATE OR REPLACE FUNCTION categorized_total()
  RETURNS integer
  LANGUAGE plpgsql

@@ -1,3 +1,5 @@
+-- Checks if every shipments transport perishable goods only if they can.
+
 CREATE OR REPLACE FUNCTION perishable_mismatches()
  RETURNS integer
  LANGUAGE plpgsql

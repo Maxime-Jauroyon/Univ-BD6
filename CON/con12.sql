@@ -1,3 +1,5 @@
+-- Checks if every trading happens within a port that supports its ship's category.
+
 CREATE OR REPLACE FUNCTION category_mismatches_trading()
  RETURNS integer
  LANGUAGE plpgsql

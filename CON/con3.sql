@@ -1,3 +1,5 @@
+-- Checks if every shipments has a type correspond to its travelling distance.
+
 CREATE OR REPLACE FUNCTION type_mismatches()
  RETURNS integer
  LANGUAGE plpgsql

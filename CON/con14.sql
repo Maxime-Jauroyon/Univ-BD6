@@ -1,3 +1,5 @@
+-- Checks if every products categories form disjointed sets.
+
 CREATE OR REPLACE FUNCTION categorized_disjointed()
  RETURNS integer
  LANGUAGE plpgsql
