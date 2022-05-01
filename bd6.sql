@@ -206,7 +206,7 @@ BEGIN
 END;
 $function$;
 
-CREATE OR REPLACE TRIGGER trigger_country_continent_for_mismatches
+CREATE TRIGGER trigger_country_continent_for_mismatches
    AFTER INSERT OR UPDATE OF continent ON countries
    FOR EACH ROW
    EXECUTE PROCEDURE check_country_continent_for_mismatches();
@@ -349,7 +349,7 @@ BEGIN
 END;
 $function$;
 
-CREATE OR REPLACE TRIGGER trigger_shipment_for_mismatches
+CREATE TRIGGER trigger_shipment_for_mismatches
    AFTER INSERT OR UPDATE ON shipments
    FOR EACH ROW
    EXECUTE PROCEDURE check_shipment_for_mismatches();
@@ -440,7 +440,7 @@ BEGIN
 END;
 $function$;
 
-CREATE OR REPLACE TRIGGER trigger_shipment_departure_for_mismatches
+CREATE TRIGGER trigger_shipment_departure_for_mismatches
    AFTER INSERT OR UPDATE OF departed ON shipments
    FOR EACH ROW
    EXECUTE PROCEDURE check_shipment_departure_for_mismatches();
@@ -507,27 +507,27 @@ BEGIN
 END;
 $function$;
 
-CREATE OR REPLACE TRIGGER trigger_product_category_for_mismatches
+CREATE TRIGGER trigger_product_category_for_mismatches
    AFTER INSERT OR UPDATE OF categorized ON products
    FOR EACH ROW
    EXECUTE PROCEDURE check_product_category_for_mismatches();
 
-CREATE OR REPLACE TRIGGER trigger_food_category_for_mismatches
+CREATE TRIGGER trigger_food_category_for_mismatches
    AFTER INSERT OR UPDATE OF product_id ON food
    FOR EACH ROW
    EXECUTE PROCEDURE check_product_category_for_mismatches();
 
-CREATE OR REPLACE TRIGGER trigger_clothes_category_for_mismatches
+CREATE TRIGGER trigger_clothes_category_for_mismatches
    AFTER INSERT OR UPDATE OF product_id ON clothes
    FOR EACH ROW
    EXECUTE PROCEDURE check_product_category_for_mismatches();
 
-CREATE OR REPLACE TRIGGER trigger_materials_category_for_mismatches
+CREATE TRIGGER trigger_materials_category_for_mismatches
    AFTER INSERT OR UPDATE OF product_id ON materials
    FOR EACH ROW
    EXECUTE PROCEDURE check_product_category_for_mismatches();
 
-CREATE OR REPLACE TRIGGER trigger_misc_category_for_mismatches
+CREATE TRIGGER trigger_misc_category_for_mismatches
    AFTER INSERT OR UPDATE OF product_id ON misc
    FOR EACH ROW
    EXECUTE PROCEDURE check_product_category_for_mismatches();
@@ -565,7 +565,7 @@ BEGIN
 END;
 $function$;
 
-CREATE OR REPLACE TRIGGER trigger_trading_port_for_mismatches
+CREATE TRIGGER trigger_trading_port_for_mismatches
    AFTER INSERT OR UPDATE OF shipment_id OR UPDATE OF port_name OR UPDATE OF port_country_name ON trading
    FOR EACH ROW
    EXECUTE PROCEDURE check_trading_port_for_mismatches();
