@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION categorized_disjointed()
+CREATE OR REPLACE FUNCTION category_mismatches_trading()
  RETURNS integer
  LANGUAGE plpgsql
 AS $function$
@@ -6,31 +6,21 @@ BEGIN
     RETURN (
         SELECT
             COUNT(*)
-        FROM ((
-                SELECT
-                    F.product_id
-                FROM
-                    food AS F,
-                    clothes AS C
-                WHERE
-                    F.product_id = C.product_id
-                UNION
-                SELECT
-                    F.product_id
-                FROM
-                    food AS F,
-                    material AS M
-                WHERE
-                    F.product_id = M.product_id)
-            UNION
+        FROM (
             SELECT
-                C.product_id
+                *
             FROM
-                clothes AS C,
-                material AS M
-            WHERE
-                C.product_id = M.product_id) AS FCM);
+                shipments
+            NATURAL JOIN ships) AS S
+            JOIN (
+                SELECT
+                    *
+                FROM
+                    ports
+                    NATURAL JOIN trading) AS S1 ON S1.shipment_id = S.shipment_id
+        WHERE
+            ship_category > port_category);
 END;
 $function$;
 
-ALTER TABLE products ADD CONSTRAINT check_disjointed CHECK (categorized = FALSE OR categorized_disjointed() = 0);
+ALTER TABLE trading ADD CONSTRAINT check_category CHECK (category_mismatches_trading() = 0);
