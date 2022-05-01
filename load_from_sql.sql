@@ -661,7 +661,7 @@ INSERT INTO trading (cargo_id, shipment_id, port_name, port_country_name, sold, 
 (14, 6, 'port5', 'Royaume du Kongo', 4, 4),
 (15, 7, 'port5', 'Empire cherifien', 2, 0),
 (18, 7, 'port5', 'Royaume de France', 4, 3),
-(23, 12, 'port1', 'Royaume du Kongo', 1, 0);
+(23, 12, 'port5', 'Royaume du Kongo', 1, 0);
 
 -- Updates necessary tables to fulfill the constraint requirements.
 \i 'load_updates.sql';
