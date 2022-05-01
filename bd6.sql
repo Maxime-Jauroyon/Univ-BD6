@@ -571,4 +571,4 @@ CREATE TRIGGER trigger_trading_port_for_mismatches
    EXECUTE PROCEDURE check_trading_port_for_mismatches();
 
 -- Loads the initial set of data.
-\i 'load_from_sql.sql';
+\i 'load_from_csv.sql';
