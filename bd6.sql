@@ -548,7 +548,7 @@ BEGIN
             SELECT
                 ship_id
             FROM
-                shipment as B
+                shipments as B
             WHERE
                 B.shipment_id = NEW.shipment_id)) > (
         SELECT
