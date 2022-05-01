@@ -650,5 +650,5 @@ INSERT INTO trading (cargo_id, shipment_id, port_name, port_country_name, sold, 
 (18, 7, 'port5', 'Royaume de France', 1, 3);
 
 -- Updates necessary tables to fulfill the constraint requirements.
-UPDATE shipments SET departed = TRUE;
 UPDATE products SET categorized = TRUE;
+UPDATE shipments SET departed = TRUE;
