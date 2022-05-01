@@ -1,3 +1,7 @@
+-- Returns the number of shipments done per continent, alongside the number of
+-- ships captured by a country of a given continent and the number of ships captured
+-- previously owned by a country of a given continent.
+
 SELECT
 	continent,
 	SUM(N.done) AS done,

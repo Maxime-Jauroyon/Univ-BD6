@@ -1,3 +1,6 @@
+-- Returns the evolution of nationalities for each ship with the number of
+-- shipments they did under each banner.
+
 SELECT
 	ship_id,
 	country_name,

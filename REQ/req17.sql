@@ -1,7 +1,9 @@
+-- Returns the total of volume and passengers count transported per ship category.
+
 SELECT
 	ship_category,
-	SUM(D.volume_total),
-	SUM(D.passengers_total)
+	SUM(D.volume_total) as volume_total,
+	SUM(D.passengers_total) as passengers_total
 FROM
 	ships
 	NATURAL JOIN (

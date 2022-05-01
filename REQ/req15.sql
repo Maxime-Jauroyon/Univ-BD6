@@ -1,3 +1,6 @@
+-- Returns the status of each port with the number of passengers that arrived and left
+-- and the number of merchandises bought and sold.
+
 WITH shipment_data (
 	shipment_id,
 	port_name_start,

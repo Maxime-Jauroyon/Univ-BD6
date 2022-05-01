@@ -1,3 +1,5 @@
+-- The most sold and most bought product per country.
+
 SELECT
 	F1.country_name,
 	F1.product_id,

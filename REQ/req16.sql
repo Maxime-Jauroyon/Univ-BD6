@@ -1,3 +1,6 @@
+-- Returns the most sold product per class or continent.
+
+-- Per class:
 SELECT
 	S1.class,
 	S1.product_id,
@@ -33,7 +36,7 @@ WHERE
 WHERE
 	class = S1.class);
 
--- per continent
+-- Per continent:
 SELECT
 	C.continent,
 	S2.product_id,

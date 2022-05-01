@@ -1,3 +1,7 @@
+-- Returns the longuest shipment's size (in term of port travelled) per ship cagegory.
+-- The shipment size is calculated with the start port added with each leg's port and finally
+-- added with the end port.
+
 WITH RECURSIVE shipment (
 	ship_id,
 	port_name_start,

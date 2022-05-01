@@ -1,3 +1,6 @@
+-- Returns a line per of countries in war with each other with the probable winner and probable winner
+-- (depending on the size of its fleet).
+
 WITH fleets (
 	country,
 	fleet

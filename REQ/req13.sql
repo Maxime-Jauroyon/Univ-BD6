@@ -1,3 +1,6 @@
+-- Returns the evolution of the number of passengers and volume of merchandises
+-- for each shipments at each step of the shipment.
+
 WITH RECURSIVE evolution (
 	shipment_id,
 	port_name,

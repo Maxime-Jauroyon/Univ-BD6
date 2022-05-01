@@ -8,30 +8,51 @@ BEGIN
     RETURN (
         SELECT
             COUNT(*)
-        FROM ((
-                SELECT
-                    F.product_id
-                FROM
-                    food AS F,
-                    clothes AS C
-                WHERE
-                    F.product_id = C.product_id
-                UNION
-                SELECT
-                    F.product_id
-                FROM
-                    food AS F,
-                    material AS M
-                WHERE
-                    F.product_id = M.product_id)
+        FROM (
+            SELECT
+                C.product_id
+            FROM
+                food AS F,
+                clothes AS C
+            WHERE
+                C.product_id = F.product_id
             UNION
             SELECT
                 C.product_id
             FROM
                 clothes AS C,
-                material AS M
+                materials AS MA
             WHERE
-                C.product_id = M.product_id) AS FCM);
+                C.product_id = MA.product_id
+            UNION
+            SELECT
+                C.product_id
+            FROM
+                clothes AS C,
+                misc AS MI
+            WHERE
+                C.product_id = MI.product_id
+            UNION
+            SELECT
+                MA.product_id
+            FROM 
+               materials AS MA,
+               food AS F
+            WHERE MA.product_id = F.product_id
+            UNION
+            SELECT
+                MA.product_id
+            FROM 
+               materials AS MA,
+               misc AS MI
+            WHERE MA.product_id = MI.product_id
+            UNION
+            SELECT
+                MI.product_id
+            FROM 
+               misc AS MI,
+               food AS F
+            WHERE MI.product_id = F.product_id) AS FINAL);
 END;
 $function$;
 

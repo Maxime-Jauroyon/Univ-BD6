@@ -1,20 +1,33 @@
--- quantité
+-- Returns the date where the most quantity or volume of merchandises was traded (bought and sold).
 
-SELECT arrival_date,quantity
-FROM
-(SELECT arrival_date,SUM(sold+bought) as quantity
-FROM trading
-NATURAL JOIN legs
-GROUP BY arrival_date) as F
-WHERE quantity = (SELECT MAX(quantity)
-                  FROM (SELECT arrival_date,SUM(sold+bought) as quantity
-                        FROM trading
-                        NATURAL JOIN legs
-                        GROUP BY arrival_date) as T);
+-- Per quantity:
+SELECT
+    arrival_date,
+    quantity
+FROM (
+    SELECT
+        arrival_date,
+        SUM(sold + bought) AS quantity
+    FROM
+        trading
+    NATURAL JOIN legs
+GROUP BY
+    arrival_date) AS F
+WHERE
+    quantity = (
+        SELECT
+            MAX(quantity)
+        FROM (
+            SELECT
+                arrival_date,
+                SUM(sold + bought) AS quantity
+            FROM
+                trading
+            NATURAL JOIN legs
+        GROUP BY
+            arrival_date) AS T);
 
-
-
--- volume
+-- Per volume:
 SELECT
     arrival_date,
     volume

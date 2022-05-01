@@ -1,4 +1,6 @@
--- with quantity
+-- Returns the shipment who has made the biggest trading in either quantity or volume.
+
+-- In quantity:
 SELECT
 	S.shipment_id,
 	S.quantity
@@ -23,7 +25,7 @@ WHERE
 			GROUP BY
 				shipment_id) AS S1);
 
--- with volume
+-- In volume:
 SELECT
 	S.shipment_id,
 	S.volume

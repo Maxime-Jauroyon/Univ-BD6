@@ -1,7 +1,12 @@
--- because we could have 2 cargo of the same product on the same shipment we need to do this :
--- SELECT shipment_id,product_id,SUM(quantity)
--- FROM cargo
--- GROUP BY shipment_id,product_id;
+-- Returns the average of quantity shipped for each category of products.
+
+-- Because we could have 2 cargo of the same product on the same shipment we need to do it this way:
+-- SELECT
+--     shipment_id,product_id,SUM(quantity)
+-- FROM
+--     cargo
+-- GROUP BY
+--     shipment_id,product_id;
 
 SELECT
 	*

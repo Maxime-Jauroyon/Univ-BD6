@@ -17,11 +17,13 @@ BEGIN
                 FROM
                     food AS F,
                     clothes AS C,
-                    material AS M
+                    materials AS MA,
+                    misc AS MI
                 WHERE
                     P.product_id = F.product_id
                     OR P.product_id = C.product_id
-                    OR P.product_id = M.product_id));
+                    OR P.product_id = MA.product_id
+                    OR P.product_id = MI.product_id));
 END;
 $function$;
 

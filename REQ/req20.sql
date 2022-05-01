@@ -1,3 +1,5 @@
+-- The quantity of product sold per category for each continent.
+
 WITH trade_data (
 	continent,
 	product_id,

@@ -1,3 +1,6 @@
+-- Returns each shipment with its count of passenger at the start then at the end
+-- and identically for the volume.
+
 SELECT
 	shipment_id,
 	PAF.passengers_start,
@@ -59,4 +62,6 @@ FROM (
 				cargo
 				NATURAL JOIN products) AS PR
 		GROUP BY
-			shipment_id) AS T) AS VF;
+			shipment_id) AS T) AS VF
+ORDER BY
+	shipment_id;
