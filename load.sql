@@ -1,4 +1,4 @@
--- Inserts all data.
+-- Inserts initial data.
 INSERT INTO countries (country_name, continent) VALUES
 ('Angleterre', 'Europe'),
 ('Brandebourg-Prusse', 'Europe'),

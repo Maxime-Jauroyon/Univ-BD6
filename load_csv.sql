@@ -1,3 +1,4 @@
+-- Loads initial `.csv` files.
 \COPY countries FROM 'CSV/countries.csv' WITH csv;
 \COPY diplomatic_relationships FROM 'CSV/diplomatic_relationships.csv'  WITH csv;
 \COPY ports FROM 'CSV/ports.csv' WITH csv;
