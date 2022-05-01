@@ -1,3 +1,6 @@
+-- Retourne le statut de chaque port avec le nombre de passagers qui sont arrivés et repartis
+-- ainsi que le nombre de marchandises achetées et vendues.
+
 -- Returns the status of each port with the number of passengers that arrived and left
 -- and the number of merchandises bought and sold.
 

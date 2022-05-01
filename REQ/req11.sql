@@ -1,4 +1,7 @@
--- Returns a line per of countries in war with each other with the probable winner and probable winner
+-- Renvoie une ligne par pays en guerre les uns contre les autres avec le gagnant probable et le perdant probable
+-- (en fonction de la taille de sa flotte).
+
+-- Returns a line per countries in war with each other with the probable winner and probable looser
 -- (depending on the size of its fleet).
 
 WITH fleets (

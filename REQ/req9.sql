@@ -1,3 +1,5 @@
+-- Renvoie la moyenne de la quantité expédiée pour chaque catégorie de produits.
+
 -- Returns the average of quantity shipped for each category of products.
 
 -- Because we could have 2 cargo of the same product on the same shipment we need to do it this way:

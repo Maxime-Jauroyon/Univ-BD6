@@ -1,3 +1,5 @@
+-- Retourne le total du volume et du nombre de passagers transportés par catégorie de navire.
+
 -- Returns the total of volume and passengers count transported per ship category.
 
 SELECT

@@ -1,3 +1,7 @@
+-- Renvoie la taille de l'expédition la plus longue (en termes de port parcouru) par catégorie de navire.
+-- La taille de la cargaison est calculée à partir du port de départ ajouté au port de chaque étape et enfin
+-- ajouté au port de fin.
+
 -- Returns the longuest shipment's size (in term of port travelled) per ship cagegory.
 -- The shipment size is calculated with the start port added with each leg's port and finally
 -- added with the end port.

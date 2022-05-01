@@ -1,3 +1,5 @@
+-- Retourne l'évolution des nationalités pour chaque navire avec le nombre d'expéditions qu'ils ont effectuées sous chaque bannière.
+
 -- Returns the evolution of nationalities for each ship with the number of
 -- shipments they did under each banner.
 

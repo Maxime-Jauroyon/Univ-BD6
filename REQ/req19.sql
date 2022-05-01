@@ -1,5 +1,9 @@
+-- Retourne la date à laquelle la plus grande quantité ou le plus grand volume de marchandises a été échangé (acheté et vendu).
+
 -- Returns the date where the most quantity or volume of merchandises was traded (bought and sold).
 
+
+-- Par quantité :
 -- Per quantity:
 SELECT
     arrival_date,
@@ -27,6 +31,7 @@ WHERE
         GROUP BY
             arrival_date) AS T);
 
+-- Par volume :
 -- Per volume:
 SELECT
     arrival_date,

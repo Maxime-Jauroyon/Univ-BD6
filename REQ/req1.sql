@@ -1,5 +1,8 @@
+-- Liste toutes les expéditions où un bateau a été capturé.
+-- Retourne l'identifiant de l'expédition, l'attaquant, le défenseur et leur relation.
+
 -- Lists every shipments where a boat has been captured.
--- Returns the shipment id, the raider, the defender's country and their relationships.
+-- Returns the shipment id, the raider, the defender and their relationship.
 
 SELECT
     A.shipment_id,

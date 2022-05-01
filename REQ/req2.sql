@@ -1,3 +1,6 @@
+-- Liste tous les navires qui ont effectué au moins 2 expéditions.
+-- Renvoie l'identifiant du navire et le volume moyen transporté par expédition.
+
 -- Lists every ships who made at least 2 shipments.
 -- Returns the ship id and the average volume transported per shipment.
 

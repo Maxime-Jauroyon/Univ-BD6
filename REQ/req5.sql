@@ -1,3 +1,5 @@
+-- Liste récursivement tous les trajets effectués par un navire pendant ses expéditions jusqu'à sa capture par un ennemi.
+
 -- Recursively lists all travels made per ship during their shipments until capture by an enemy.
 
 WITH RECURSIVE shipment (

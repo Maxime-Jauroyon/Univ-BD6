@@ -1,3 +1,6 @@
+-- Retourne chaque expédition avec son nombre de passager au début puis à la fin
+-- et de manière identique pour le volume.
+
 -- Returns each shipment with its count of passenger at the start then at the end
 -- and identically for the volume.
 

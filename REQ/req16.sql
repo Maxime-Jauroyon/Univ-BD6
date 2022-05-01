@@ -1,5 +1,8 @@
+-- Retourne le produit le plus vendu par classe ou par continent.
+
 -- Returns the most sold product per class or continent.
 
+-- Par classe :
 -- Per class:
 SELECT
 	S1.class,
@@ -36,6 +39,7 @@ WHERE
 WHERE
 	class = S1.class);
 
+-- Par continent :
 -- Per continent:
 SELECT
 	C.continent,

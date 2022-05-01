@@ -1,3 +1,7 @@
+-- Retourne le nombre d'expéditions effectuées par continent, ainsi que le nombre de
+-- navires capturés par un pays d'un continent donné et le nombre de navires capturés
+-- précédemment possédés par un pays d'un continent donné.
+
 -- Returns the number of shipments done per continent, alongside the number of
 -- ships captured by a country of a given continent and the number of ships captured
 -- previously owned by a country of a given continent.

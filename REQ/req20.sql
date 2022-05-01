@@ -1,4 +1,6 @@
--- The quantity of product sold per category for each continent.
+-- Retourne la quantité de produits vendus par catégorie pour chaque continent.
+
+-- Returns the quantity of product sold per category for each continent.
 
 WITH trade_data (
 	continent,

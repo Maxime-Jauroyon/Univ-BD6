@@ -1,4 +1,6 @@
--- The most sold and most bought product per country.
+-- Retourne le produit le plus vendu et le plus acheté par pays.
+
+-- Returns the most sold and most bought product per country.
 
 SELECT
 	F1.country_name,

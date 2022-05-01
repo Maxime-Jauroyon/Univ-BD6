@@ -1,5 +1,8 @@
+-- Retourne l'expédition qui a fait le plus gros échange en quantité ou en volume.
+
 -- Returns the shipment who has made the biggest trading in either quantity or volume.
 
+-- En quantité:
 -- In quantity:
 SELECT
 	S.shipment_id,
@@ -25,6 +28,7 @@ WHERE
 			GROUP BY
 				shipment_id) AS S1);
 
+-- En volume:
 -- In volume:
 SELECT
 	S.shipment_id,

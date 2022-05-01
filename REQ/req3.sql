@@ -1,3 +1,6 @@
+-- Liste tous les navires qui ont toujours commencé leurs expéditions avec le nombre de passagers remplis.
+-- Retourne l'identifiant du navire.
+
 -- Lists every ships who always started their shipments with the count of passengers filled.
 -- Returns the ship id.
 

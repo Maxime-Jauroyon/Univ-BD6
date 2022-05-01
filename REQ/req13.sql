@@ -1,3 +1,6 @@
+-- Retourne l'évolution du nombre de passagers et du volume de marchandises
+-- pour chaque étape de chaque expédition.
+
 -- Returns the evolution of the number of passengers and volume of merchandises
 -- for each shipments at each step of the shipment.
 
