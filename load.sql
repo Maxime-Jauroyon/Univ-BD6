@@ -641,12 +641,11 @@ INSERT INTO cargo (cargo_id, shipment_id, product_id, quantity) VALUES
 (20, 8, 28, 6);
 
 INSERT INTO trading (cargo_id, shipment_id, port_name, port_country_name, sold, bought) VALUES
-(10, 4, 'port3', 'Danemark-Norvege', 3, 0),
-(12, 4, 'port3', 'Danemark-Norvege', 10, 5),
+(10, 4, 'port3', 'Province-Unies', 3, 0),
+(12, 4, 'port3', 'Province-Unies', 10, 5),
 (13, 5, 'port4', 'Dynastie Qing', 50, 10),
 (14, 6, 'port5', 'Dai Viet', 12, 0),
-(15, 6, 'port5', 'Royaume du Kongo', 4, 4),
-(18, 7, 'port5', 'Empire cherifien', 2, 0),
+(15, 7, 'port5', 'Empire cherifien', 2, 0),
 (18, 7, 'port5', 'Royaume de France', 1, 3);
 
 -- Updates necessary tables to fulfill the constraint requirements.
