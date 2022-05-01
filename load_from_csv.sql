@@ -7,8 +7,12 @@
 \COPY shipments FROM 'CSV/shipments.csv' WITH csv;
 \COPY legs FROM 'CSV/legs.csv' WITH csv;
 \COPY products FROM 'CSV/products.csv' WITH csv;
-\COPY cargo FROM 'CSV/cargo.csv' WITH csv;
-\COPY trading FROM 'CSV/trading.csv' WITH csv;
 \COPY food FROM 'CSV/food.csv' WITH csv;
 \COPY clothes FROM 'CSV/clothes.csv' WITH csv;
-\COPY material FROM 'CSV/material.csv' WITH csv;
+\COPY materials FROM 'CSV/materials.csv' WITH csv;
+\COPY misc FROM 'CSV/misc.csv' WITH csv;
+\COPY cargo FROM 'CSV/cargo.csv' WITH csv;
+\COPY trading FROM 'CSV/trading.csv' WITH csv;
+
+-- Updates necessary tables to fulfill the constraint requirements.
+\i 'load_updates.sql';
