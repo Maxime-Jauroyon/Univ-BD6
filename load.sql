@@ -540,7 +540,16 @@ INSERT INTO shipments (shipment_id, ship_id, port_name_start, port_name_end, por
 (5, 44, 'port5', 'port4', 'Japon', 'Empire ottoman', '1700-05-12', '1700-06-28', 47, 57, 'long', 'Asie', NULL, 2390, FALSE),
 (6, 65, 'port5', 'port5', 'Empire espagnol', 'Lan Xang', '1700-09-06', '1700-10-20', 45, 60, 'long', 'Intercontinental', NULL, 2109, FALSE),
 (7, 55, 'port5', 'port5', 'Empire ottoman', 'Royaume du Kongo', '1700-06-02', NULL, NULL, 86, 'long', 'Intercontinental', '1700-07-07', 2763, FALSE),
-(8, 12, 'port4', 'port2', 'Dynastie Qing', 'Dynastie Joseon', '1700-02-05', NULL, NULL, 40, 'court', 'Asie', '1700-02-13', 948, FALSE);
+(8, 12, 'port4', 'port2', 'Dynastie Qing', 'Dynastie Joseon', '1700-02-05', NULL, NULL, 40, 'court', 'Asie', '1700-02-13', 948, FALSE),
+(9, 71, 'port3', 'port4', 'Confederation Suisse', 'Royaume de France', '1700-11-12', '1700-11-28', 16, 20, 'court', 'Europe', NULL, 451, FALSE),
+(10, 71, 'port4', 'port2', 'Royaume de France', 'Royaume de France', '1700-12-12', '1700-12-24', 12, 20, 'court', 'Europe', NULL, 312, FALSE),
+(11, 12, 'port2', 'port4', 'Dai Viet', 'Dynastie Qing', '1700-02-28', '1700-03-04', 4, 40, 'court', 'Asie', NULL, 422, FALSE),
+(12, 75, 'port5', 'port5', 'Empire espagnol', 'Royaume du Kongo', '1701-01-01', '1701-02-12', 42, 100, 'moyen', 'Intercontinental', NULL, 1012, FALSE),
+(13, 12, 'port4', 'port2', 'Dynastie Qing', 'Dynastie Qing', '1700-03-20', '1700-04-02', 13, 40, 'court', 'Asie', NULL, 321, FALSE),
+(14, 291, 'port5', 'port1', 'Royaume du Kongo', 'Royaume du Kongo', '1701-01-17', '1701-02-10', 24, 20, 'court', 'Afrique', NULL, 412, FALSE),
+(15, 291, 'port1', 'port3', 'Royaume du Kongo', 'Royaume du Kongo', '1701-03-10', '1701-03-20', 10, 20, 'court', 'Afrique', NULL, 308, FALSE),
+(16, 291, 'port3', 'port4', 'Royaume du Kongo', 'Royaume du Kongo', '1701-04-20', '1701-05-10', 20, 20, 'court', 'Afrique', NULL, 278, FALSE),
+(17, 291, 'port4', 'port2', 'Royaume du Kongo', 'Royaume du Kongo', '1701-05-25', '1701-06-20', 26, 20, 'court', 'Afrique', NULL, 682, FALSE);
 
 INSERT INTO legs (shipment_id, port_name, port_country_name, offloaded_passengers, loaded_passengers, traveled_distance, arrival_date) VALUES
 (3, 'port4', 'Royaume de Ryukyu', 23, 20, 720, '1700-06-20'),
@@ -551,7 +560,8 @@ INSERT INTO legs (shipment_id, port_name, port_country_name, offloaded_passenger
 (6, 'port5', 'Royaume du Kongo', 23, 42, 1429, '1700-09-28'),
 (6, 'port5', 'Saint-Empire romain germanique', 3, 13, 672, '1700-10-10'),
 (7, 'port5', 'Empire cherifien', 35, 20, 1823, '1700-06-09'),
-(7, 'port5', 'Royaume de France', 47, 32, 872, '1700-06-20');
+(7, 'port5', 'Royaume de France', 47, 32, 872, '1700-06-20'),
+(12, 'port1', 'Royaume du Kongo', 6, 8, 872, '1701-02-06');
 
 INSERT INTO products (product_id, name, volume, perishable, categorized) VALUES
 (1, 'Bois', 50, FALSE, FALSE),
@@ -638,7 +648,10 @@ INSERT INTO cargo (cargo_id, shipment_id, product_id, quantity) VALUES
 (17, 3, 18, 10),
 (18, 7, 3, 10),
 (19, 8, 3, 12),
-(20, 8, 28, 6);
+(20, 8, 28, 6),
+(21, 9, 3, 4),
+(22, 11, 3, 1),
+(23, 12, 12, 1);
 
 INSERT INTO trading (cargo_id, shipment_id, port_name, port_country_name, sold, bought) VALUES
 (10, 4, 'port3', 'Province-Unies', 3, 0),
@@ -647,7 +660,8 @@ INSERT INTO trading (cargo_id, shipment_id, port_name, port_country_name, sold, 
 (14, 6, 'port5', 'Dai Viet', 12, 0),
 (14, 6, 'port5', 'Royaume du Kongo', 4, 4),
 (15, 7, 'port5', 'Empire cherifien', 2, 0),
-(18, 7, 'port5', 'Royaume de France', 4, 3);
+(18, 7, 'port5', 'Royaume de France', 4, 3),
+(23, 12, 'port1', 'Royaume du Kongo', 1, 0);
 
 -- Updates necessary tables to fulfill the constraint requirements.
 UPDATE products SET categorized = TRUE;
