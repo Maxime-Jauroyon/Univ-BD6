@@ -1,5 +1,7 @@
 # BD6
 
+This project is the modeling, settlement, and implementation of a database based on the maritime trade in the 18th century.
+
 ## Installation
 
 - Open a terminal in the project's root directory.
