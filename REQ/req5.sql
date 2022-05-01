@@ -1,4 +1,4 @@
--- Reconstitue les trajets effectués par les bateaux recouvrant des voyages différents, si le bateau est capturer alors c'est la fin du voyage
+-- Recursively lists all travels made per ship during their shipments until capture by an enemy.
 
 WITH RECURSIVE shipment (
     ship_id,
