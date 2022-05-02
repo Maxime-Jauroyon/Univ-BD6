@@ -13,7 +13,7 @@ FROM (ships_nationalities
 			*
 		FROM
 			ships
-			NATURAL JOIN shipments) AS F) AS S
+		NATURAL JOIN shipments) AS F) AS S
 WHERE
 	start_possesion_date = (
 		SELECT
@@ -22,7 +22,7 @@ WHERE
 			ships_nationalities
 		WHERE
 			ship_id = S.ship_id
-			AND start_possesion_date <= S.start_date)
-	GROUP BY
-		ship_id,
-		country_name;
+		AND start_possesion_date <= S.start_date)
+GROUP BY
+	ship_id,
+	country_name;

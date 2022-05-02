@@ -8,7 +8,7 @@ SELECT
     DISTINCT ship_id
 FROM
     ships AS S
-    NATURAL JOIN shipments
+NATURAL JOIN shipments
 WHERE NOT EXISTS (
     SELECT
         *

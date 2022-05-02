@@ -50,10 +50,10 @@ NATURAL JOIN (
     SELECT
         shipment_id,
         ship_id,
-        SUM(A.volume_cargo) AS volume_shipment
+        SUM(COALESCE(A.volume_cargo,0)) AS volume_shipment
     FROM
         shipments
-    NATURAL JOIN (
+    NATURAL LEFT OUTER JOIN (
         SELECT
             shipment_id,
             cargo_id,
@@ -95,13 +95,14 @@ NATURAL JOIN (
         COUNT(shipment_id) AS nbTotal
     FROM
         ships
-        NATURAL JOIN shipments
+    NATURAL JOIN shipments
     GROUP BY
         ship_id) AS T
 WHERE
     F.nbFull = T.nbTotal;
 
 -- Requête 4
+-- Liste tous les navires qui ont toujours commencé leurs expéditions avec le nombre de passagers remplis.
 -- Liste tous les navires qui ont toujours commencé leurs expéditions avec le nombre de passagers remplis.
 -- Retourne l'identifiant du navire.
 
@@ -112,7 +113,7 @@ SELECT
     DISTINCT ship_id
 FROM
     ships AS S
-    NATURAL JOIN shipments
+NATURAL JOIN shipments
 WHERE NOT EXISTS (
     SELECT
         *
@@ -181,12 +182,12 @@ FROM
     shipment;
 
 -- Requête 6
--- Liste récursivement toutes les expéditions effectués par un navire pendant ses expéditions jusqu'à sa capture par un ennemi.
+-- retourne l'id du voyage qui a duré le plus longtemps.
 
--- Returns the shipment id with the longuest distance travelled.
+-- Returns the shipment id with the longuest duration travelled.
 
--- Sans valeurs NULL.
--- Without NULL values.
+-- valeurs NULL sont ignorées par MAX().
+-- NULL values skipped by MAX().
 SELECT
     shipment_id
 FROM
@@ -198,8 +199,8 @@ WHERE
         FROM
             shipments);
 
--- Avec valeurs NULL.
--- With NULL values.
+-- les valeurs NULL donnent unknown comme résultat.
+-- NULL values give unknown result.
 SELECT
     shipment_id
 FROM
@@ -244,18 +245,16 @@ FROM (
         ((passengers + COALESCE(gain, 0)) - COALESCE(lose, 0)) AS passengers_end
     FROM
         shipments
-    NATURAL
-    LEFT OUTER JOIN (
-    SELECT
-        shipment_id,
-        SUM(loaded_passengers) AS gain,
-        SUM(offloaded_passengers) AS lose
-    FROM
-        legs
-    GROUP BY
-        shipment_id) AS PA) AS PAF
-    NATURAL
-    LEFT OUTER JOIN (
+    NATURAL LEFT OUTER JOIN (
+        SELECT
+            shipment_id,
+            SUM(loaded_passengers) AS gain,
+            SUM(offloaded_passengers) AS lose
+        FROM
+            legs
+        GROUP BY
+            shipment_id) AS PA) AS PAF
+NATURAL LEFT OUTER JOIN (
     SELECT
         shipment_id,
         S.volume_shipment AS volume_start,
@@ -266,31 +265,30 @@ FROM (
             SUM(A.volume_cargo) AS volume_shipment
         FROM
             shipments
-            NATURAL JOIN (
-                SELECT
-                    shipment_id,
-                    cargo_id,
-                    ((quantity * volume) + 0.0) AS volume_cargo
-                FROM
-                    cargo
-                    NATURAL JOIN products) AS A
-            GROUP BY
-                shipment_id) AS S
-        NATURAL
-    LEFT OUTER JOIN (
-    SELECT
-        shipment_id,
-        SUM(bought * volume_cargo) AS gain,
-        SUM(sold * volume_cargo) AS lose
-    FROM
-        trading
+        NATURAL JOIN (
+            SELECT
+                shipment_id,
+                cargo_id,
+                ((quantity * volume) + 0.0) AS volume_cargo
+            FROM
+                cargo
+            NATURAL JOIN products) AS A
+        GROUP BY
+            shipment_id) AS S
+    NATURAL LEFT OUTER JOIN (
+        SELECT
+            shipment_id,
+            SUM(bought * volume_cargo) AS gain,
+            SUM(sold * volume_cargo) AS lose
+        FROM
+            trading
         NATURAL JOIN (
             SELECT
                 cargo_id,
                 volume AS volume_cargo
             FROM
                 cargo
-                NATURAL JOIN products) AS PR
+            NATURAL JOIN products) AS PR
         GROUP BY
             shipment_id) AS T) AS VF
 ORDER BY
@@ -312,7 +310,7 @@ FROM (ships_nationalities
             *
         FROM
             ships
-            NATURAL JOIN shipments) AS F) AS S
+        NATURAL JOIN shipments) AS F) AS S
 WHERE
     start_possesion_date = (
         SELECT
@@ -321,10 +319,11 @@ WHERE
             ships_nationalities
         WHERE
             ship_id = S.ship_id
-            AND start_possesion_date <= S.start_date)
-    GROUP BY
-        ship_id,
-        country_name;
+        AND start_possesion_date <= S.start_date)
+GROUP BY
+    ship_id,
+    country_name;
+
 
 -- Requête 9
 -- Renvoie la moyenne de la quantité expédiée pour chaque catégorie de produits.
@@ -428,7 +427,7 @@ FROM (
 
 -- Requête 10
 -- Renvoie la taille de l'expédition la plus longue (en termes de port parcouru) par catégorie de navire.
--- La taille de la cargaison est calculée à partir du port de départ ajouté au port de chaque étape et enfin
+-- La taille de l'expédition est calculée à partir du port de départ ajouté au port de chaque étape et enfin
 -- ajouté au port de fin.
 
 -- Returns the longuest shipment's size (in term of port travelled) per ship cagegory.
@@ -460,49 +459,49 @@ WITH RECURSIVE shipment (
                     legs
                 WHERE
                     shipment_id = S.shipment_id)) AS ports
-        FROM
-            shipments AS S
-        UNION
-        SELECT
-            T.ship_id,
-            T.port_name_start,
-            T.port_country_name_start,
-            S.port_name_end,
-            S.port_country_name_end,
-            T.start_date,
-            S.end_date,
-            (T.ports + 1 + (
-                    SELECT
-                        COUNT(*)
-                    FROM
-                        legs
-                    WHERE
-                        shipment_id = S.shipment_id)) AS ports
-            FROM
-                shipments AS S,
-                shipment AS T
-            WHERE
-                S.ship_id = T.ship_id
-                AND S.port_name_start = T.port_name_end
-                AND S.port_country_name_start = T.port_country_name_end
-                AND T.end_date IS NOT NULL
-                AND T.end_date < S.start_date
-                AND S.start_date <= ALL (
-                    SELECT
-                        S1.start_date
-                    FROM
-                        shipments AS S1
-                    WHERE
-                        S1.ship_id = S.ship_id
-                        AND T.end_date < S1.start_date
-                        AND S1.port_name_start = T.port_name_end
-                        AND S1.port_country_name_start = T.port_country_name_end)
+    FROM
+        shipments AS S
+    UNION
+    SELECT
+        T.ship_id,
+        T.port_name_start,
+        T.port_country_name_start,
+        S.port_name_end,
+        S.port_country_name_end,
+        T.start_date,
+        S.end_date,
+        (T.ports + 1 + (
+                        SELECT
+                            COUNT(*)
+                        FROM
+                            legs
+                        WHERE
+                            shipment_id = S.shipment_id)) AS ports
+    FROM
+        shipments AS S,
+        shipment AS T
+    WHERE
+        S.ship_id = T.ship_id
+    AND S.port_name_start = T.port_name_end
+    AND S.port_country_name_start = T.port_country_name_end
+    AND T.end_date IS NOT NULL
+    AND T.end_date < S.start_date
+    AND S.start_date <= ALL (
+                            SELECT
+                                S1.start_date
+                            FROM
+                                shipments AS S1
+                            WHERE
+                                S1.ship_id = S.ship_id
+                            AND T.end_date < S1.start_date
+                            AND S1.port_name_start = T.port_name_end
+                            AND S1.port_country_name_start = T.port_country_name_end)
 )
 SELECT
     ship_category, MAX(ports)
 FROM
     shipment
-    NATURAL JOIN ships
+NATURAL JOIN ships
 GROUP BY
     ship_category;
 
@@ -523,14 +522,14 @@ WITH fleets (
     FROM
         countries
     NATURAL JOIN ships_nationalities AS S
-WHERE
-    start_possesion_date = (
-        SELECT
-            MAX(start_possesion_date)
-        FROM
-            ships_nationalities
-        WHERE
-            ship_id = S.ship_id)
+    WHERE
+        start_possesion_date = (
+            SELECT
+                MAX(start_possesion_date)
+            FROM
+                ships_nationalities
+            WHERE
+                ship_id = S.ship_id)
     GROUP BY
         country_name
 )
@@ -543,9 +542,9 @@ FROM
     fleets AS F2
 WHERE
     country_name_1 = F1.country
-    AND country_name_2 = F2.country
-    AND relation = 'En guerre'
-    AND F1.fleet > F2.fleet;
+AND country_name_2 = F2.country
+AND relation = 'En guerre'
+AND F1.fleet > F2.fleet;
 
 -- Requête 12
 -- Retourne l'expédition qui a fait le plus gros échange en quantité ou en volume.
@@ -639,17 +638,15 @@ WITH RECURSIVE evolution (
         port_country_name_start AS port_country_name,
         0 AS distance,
         passengers,
-        COALESCE(S.volume_shipment,
-            0) AS volume
+        COALESCE(S.volume_shipment,0) AS volume
     FROM
         shipments
-    NATURAL
-    LEFT OUTER JOIN (
-    SELECT
-        shipment_id,
-        SUM(A.volume_cargo) AS volume_shipment
-    FROM
-        shipments
+    NATURAL LEFT OUTER JOIN (
+        SELECT
+            shipment_id,
+            SUM(A.volume_cargo) AS volume_shipment
+        FROM
+            shipments
         NATURAL JOIN (
             SELECT
                 shipment_id,
@@ -657,7 +654,7 @@ WITH RECURSIVE evolution (
                 ((quantity * volume) + 0.0) AS volume_cargo
             FROM
                 cargo
-                NATURAL JOIN products) AS A
+            NATURAL JOIN products) AS A
         GROUP BY
             shipment_id) AS S
     UNION
@@ -667,9 +664,7 @@ WITH RECURSIVE evolution (
         S1.port_country_name,
         S1.distance,
         S1.passengers,
-        ((S1.volume + COALESCE(S2.gain,
-                    0)) - COALESCE(S2.lose,
-                0)) AS volume
+        ((S1.volume + COALESCE(S2.gain,0)) - COALESCE(S2.lose,0)) AS volume
     FROM (
         SELECT
             E.shipment_id,
@@ -683,37 +678,38 @@ WITH RECURSIVE evolution (
             evolution AS E
         WHERE
             E.shipment_id = L.shipment_id
-            AND L.traveled_distance > E.distance
-            AND L.traveled_distance = (
+        AND L.traveled_distance > E.distance
+        AND L.traveled_distance = (
                 SELECT
                     MIN(traveled_distance)
                 FROM
                     legs
                 WHERE
                     shipment_id = L.shipment_id
-                    AND traveled_distance > E.distance)) AS S1
+                AND traveled_distance > E.distance)) AS S1
         LEFT OUTER JOIN (
-        SELECT
-            shipment_id,
-            port_name,
-            port_country_name,
-            SUM(bought * volume) AS gain,
-            SUM(sold * volume) AS lose
-        FROM
-            trading
+            SELECT
+                shipment_id,
+                port_name,
+                port_country_name,
+                SUM(bought * volume) AS gain,
+                SUM(sold * volume) AS lose
+            FROM
+                trading
             NATURAL JOIN (
-                SELECT
-                    cargo_id,
-                    volume
-                FROM
-                    cargo
+                    SELECT
+                        cargo_id,
+                        volume
+                    FROM
+                        cargo
                     NATURAL JOIN products) AS PR
             GROUP BY
                 shipment_id,
                 port_name,
-                port_country_name) AS S2 ON S1.port_name = S2.port_name
-            AND S1.port_country_name = S2.port_country_name
-            AND S1.shipment_id = S2.shipment_id
+                port_country_name) AS S2 
+        ON S1.port_name = S2.port_name
+        AND S1.port_country_name = S2.port_country_name
+        AND S1.shipment_id = S2.shipment_id
 )
 SELECT
     *
@@ -749,71 +745,75 @@ SELECT
     SUM(N.being_captured) AS being_captured
 FROM
     countries
-    NATURAL JOIN (
-        SELECT
-            C.country_name,
-            COALESCE((
-                SELECT
-                    count(*) AS travel FROM (ships_nationalities
-                        NATURAL JOIN (
-                            SELECT
-                                * FROM ships
-                                NATURAL JOIN shipments) AS F) AS S
+NATURAL JOIN (
+    SELECT
+        C.country_name,
+        (
+            SELECT
+                count(*) AS travel 
+            FROM (ships_nationalities
+                    NATURAL JOIN (
+                        SELECT
+                            * 
+                        FROM ships
+                        NATURAL JOIN shipments) AS F) AS S
+            WHERE
+                start_possesion_date = (
+                        SELECT
+                            MAX(start_possesion_date)
+                        FROM ships_nationalities
+                        WHERE
+                            ship_id = S.ship_id
+                        AND start_possesion_date <= S.start_date)
+            AND country_name = C.country_name
+                    GROUP BY
+                        country_name) AS done, 
+        (
+            SELECT
+                count(*)
+            FROM
+                shipments AS S,
+                ships_nationalities AS S1,
+                ships_nationalities AS S2
+            WHERE
+                S.capture_date IS NOT NULL
+            AND S.ship_id = S1.ship_id
+            AND S1.ship_id = S2.ship_id
+            AND S.capture_date = S1.start_possesion_date
+            AND S2.start_possesion_date < S.capture_date
+            AND S2.start_possesion_date >= ALL (
+                    SELECT
+                        S3.start_possesion_date
+                    FROM
+                        ships_nationalities AS S3
                     WHERE
-                        start_possesion_date = (
+                        S3.ship_id = S2.ship_id
+                    AND S3.start_possesion_date < S.capture_date)
+            AND S1.country_name = C.country_name) AS captured, 
+        (
+            SELECT
+                count(*)
+            FROM
+                shipments AS S,
+                ships_nationalities AS S1,
+                ships_nationalities AS S2
+            WHERE
+                S.capture_date IS NOT NULL
+            AND S.ship_id = S1.ship_id
+            AND S1.ship_id = S2.ship_id
+            AND S.capture_date = S1.start_possesion_date
+            AND S2.start_possesion_date < S.capture_date
+            AND S2.start_possesion_date >= ALL (
                             SELECT
-                                MAX(start_possesion_date)
-                                FROM ships_nationalities
+                                S3.start_possesion_date
+                            FROM
+                                ships_nationalities AS S3
                             WHERE
-                                ship_id = S.ship_id
-                                AND start_possesion_date <= S.start_date)
-                            AND country_name = C.country_name
-                        GROUP BY
-                            country_name), 0) AS done, (
-                SELECT
-                    count(*)
-                FROM
-                    shipments AS S,
-                    ships_nationalities AS S1,
-                    ships_nationalities AS S2
-                WHERE
-                    S.capture_date IS NOT NULL
-                    AND S.ship_id = S1.ship_id
-                    AND S1.ship_id = S2.ship_id
-                    AND S.capture_date = S1.start_possesion_date
-                    AND S2.start_possesion_date < S.capture_date
-                    AND S2.start_possesion_date >= ALL (
-                        SELECT
-                            S3.start_possesion_date
-                        FROM
-                            ships_nationalities AS S3
-                        WHERE
-                            S3.ship_id = S2.ship_id
+                                S3.ship_id = S2.ship_id
                             AND S3.start_possesion_date < S.capture_date)
-                        AND S1.country_name = C.country_name) AS captured, (
-                        SELECT
-                            count(*)
-                        FROM
-                            shipments AS S,
-                            ships_nationalities AS S1,
-                            ships_nationalities AS S2
-                        WHERE
-                            S.capture_date IS NOT NULL
-                            AND S.ship_id = S1.ship_id
-                            AND S1.ship_id = S2.ship_id
-                            AND S.capture_date = S1.start_possesion_date
-                            AND S2.start_possesion_date < S.capture_date
-                            AND S2.start_possesion_date >= ALL (
-                                SELECT
-                                    S3.start_possesion_date
-                                FROM
-                                    ships_nationalities AS S3
-                                WHERE
-                                    S3.ship_id = S2.ship_id
-                                    AND S3.start_possesion_date < S.capture_date)
-                                AND S2.country_name = C.country_name) AS being_captured
-                        FROM
-                            countries AS C) AS N
+            AND S2.country_name = C.country_name) AS being_captured
+    FROM
+        countries AS C) AS N
 GROUP BY
     continent;
 
@@ -843,10 +843,8 @@ WITH shipment_data (
         PAF.port_country_name_end,
         PAF.passengers_start,
         PAF.passengers_end,
-        COALESCE(VF.volume_start,
-            0) AS volume_start,
-        COALESCE(VF.volume_end,
-            0) AS volume_end
+        COALESCE(VF.volume_start,0) AS volume_start,
+        COALESCE(VF.volume_end,0) AS volume_end
     FROM (
         SELECT
             shipment_id,
@@ -855,35 +853,29 @@ WITH shipment_data (
             port_name_end,
             port_country_name_end,
             passengers AS passengers_start,
-            ((passengers + COALESCE(gain,
-                        0)) - COALESCE(lose,
-                    0)) AS passengers_end
+            ((passengers + COALESCE(gain,0)) - COALESCE(lose,0)) AS passengers_end
         FROM
             shipments
-        NATURAL
-    LEFT OUTER JOIN (
-    SELECT
-        shipment_id,
-        SUM(loaded_passengers) AS gain,
-        SUM(offloaded_passengers) AS lose
-    FROM
-        legs
-    GROUP BY
-        shipment_id) AS PA) AS PAF
-    NATURAL
-    LEFT OUTER JOIN (
-    SELECT
-        shipment_id,
-        S.volume_shipment AS volume_start,
-        ((S.volume_shipment + COALESCE(T.gain,
-                    0)) - COALESCE(T.lose,
-                0)) AS volume_end
-    FROM (
+        NATURAL LEFT OUTER JOIN (
+            SELECT
+                shipment_id,
+                SUM(loaded_passengers) AS gain,
+                SUM(offloaded_passengers) AS lose
+            FROM
+                legs
+            GROUP BY
+                shipment_id) AS PA) AS PAF
+    NATURAL LEFT OUTER JOIN (
         SELECT
             shipment_id,
-            SUM(A.volume_cargo) AS volume_shipment
-        FROM
-            shipments
+            S.volume_shipment AS volume_start,
+            ((S.volume_shipment + COALESCE(T.gain,0)) - COALESCE(T.lose,0)) AS volume_end
+        FROM (
+            SELECT
+                shipment_id,
+                SUM(A.volume_cargo) AS volume_shipment
+            FROM
+                shipments
             NATURAL JOIN (
                 SELECT
                     shipment_id,
@@ -891,26 +883,25 @@ WITH shipment_data (
                     ((quantity * volume) + 0.0) AS volume_cargo
                 FROM
                     cargo
-                    NATURAL JOIN products) AS A
+                NATURAL JOIN products) AS A
             GROUP BY
                 shipment_id) AS S
-        NATURAL
-    LEFT OUTER JOIN (
-    SELECT
-        shipment_id,
-        SUM(bought * volume_cargo) AS gain,
-        SUM(sold * volume_cargo) AS lose
-    FROM
-        trading
-        NATURAL JOIN (
+        NATURAL LEFT OUTER JOIN (
             SELECT
-                cargo_id,
-                volume AS volume_cargo
+                shipment_id,
+                SUM(bought * volume_cargo) AS gain,
+                SUM(sold * volume_cargo) AS lose
             FROM
-                cargo
+                trading
+            NATURAL JOIN (
+                SELECT
+                    cargo_id,
+                    volume AS volume_cargo
+                FROM
+                    cargo
                 NATURAL JOIN products) AS PR
-        GROUP BY
-            shipment_id) AS T) AS VF
+            GROUP BY
+                shipment_id) AS T) AS VF
 )
 SELECT
     port_name,
@@ -954,38 +945,36 @@ FROM (
         port_country_name,
         P.arrive AS passengers_arrive,
         P.left AS passengers_left,
-        V.receive AS volume_receive,
-        V.send AS volume_send,
+        COALESCE(V.receive,0) AS volume_receive,
+        COALESCE(V.send,0) AS volume_send,
         P.nb_shipment
     FROM (
         SELECT
             port_name,
             port_country_name,
-            SUM(loaded_passengers) AS
-        LEFT,
-        SUM(offloaded_passengers) AS arrive,
-        count(*) AS nb_shipment
-    FROM
-        legs
-    GROUP BY
-        port_name,
-        port_country_name) AS P
-    NATURAL
-    LEFT OUTER JOIN (
-    SELECT
-        port_name,
-        port_country_name,
-        SUM(bought * volume_cargo) AS send,
-        SUM(sold * volume_cargo) AS receive
-    FROM
-        trading
+            SUM(loaded_passengers) AS left,
+            SUM(offloaded_passengers) AS arrive,
+            count(*) AS nb_shipment
+        FROM
+            legs
+        GROUP BY
+            port_name,
+            port_country_name) AS P
+    NATURAL LEFT OUTER JOIN (
+        SELECT
+            port_name,
+            port_country_name,
+            SUM(bought * volume_cargo) AS send,
+            SUM(sold * volume_cargo) AS receive
+        FROM
+            trading
         NATURAL JOIN (
             SELECT
                 cargo_id,
                 volume AS volume_cargo
             FROM
                 cargo
-                NATURAL JOIN products) AS PR
+            NATURAL JOIN products) AS PR
         GROUP BY
             port_name,
             port_country_name) AS V) AS F
@@ -996,9 +985,9 @@ ORDER BY
     port_country_name;
 
 -- Requête 16
--- Retourne le produit le plus vendu par classe ou par continent.
+-- Retourne le produit le plus échangé par classe ou par continent.
 
--- Returns the most sold product per class or continent.
+-- Returns the most trade product per class or continent.
 
 -- Par classe :
 -- Per class:
@@ -1014,7 +1003,7 @@ FROM (shipments
             SUM(sold + bought) AS quantity
         FROM
             trading
-            NATURAL JOIN cargo
+        NATURAL JOIN cargo
         GROUP BY
             shipment_id,
             product_id) AS S) AS S1
@@ -1030,12 +1019,12 @@ WHERE
             FROM
                 trading
             NATURAL JOIN cargo
-        GROUP BY
-            shipment_id,
-            product_id) AS S2
-    NATURAL JOIN shipments
-WHERE
-    class = S1.class);
+            GROUP BY
+                shipment_id,
+                product_id) AS S2
+        NATURAL JOIN shipments
+        WHERE
+            class = S1.class);
 
 -- Par continent :
 -- Per continent:
@@ -1045,37 +1034,37 @@ SELECT
     S2.quantity
 FROM
     countries AS C
-    NATURAL JOIN (
+NATURAL JOIN (
+    SELECT
+        S.port_country_name AS country_name,
+        S.product_id,
+        S.quantity
+    FROM (
         SELECT
-            S.port_country_name AS country_name,
-            S.product_id,
-            S.quantity
-        FROM (
+            port_name,
+            port_country_name,
+            product_id,
+            SUM(sold + bought) AS quantity
+        FROM
+            trading
+        NATURAL JOIN cargo
+        GROUP BY
+            port_name,
+            port_country_name,
+            product_id) AS S
+    WHERE
+        S.quantity = (
             SELECT
-                port_name,
-                port_country_name,
-                product_id,
-                SUM(sold + bought) AS quantity
-            FROM
-                trading
-                NATURAL JOIN cargo
-            GROUP BY
-                port_name,
-                port_country_name,
-                product_id) AS S
-        WHERE
-            S.quantity = (
+                MAX(quantity)
+            FROM (
                 SELECT
-                    MAX(quantity)
-                FROM (
-                    SELECT
-                        port_name,
-                        port_country_name,
-                        product_id,
-                        SUM(sold + bought) AS quantity
-                    FROM
-                        trading
-                    NATURAL JOIN cargo
+                    port_name,
+                    port_country_name,
+                    product_id,
+                    SUM(sold + bought) AS quantity
+                FROM
+                    trading
+                NATURAL JOIN cargo
                 GROUP BY
                     port_name,
                     port_country_name,
@@ -1099,7 +1088,7 @@ WHERE
                     SUM(sold + bought) AS quantity
                 FROM
                     trading
-                    NATURAL JOIN cargo
+                NATURAL JOIN cargo
                 GROUP BY
                     port_name,
                     port_country_name,
@@ -1117,12 +1106,12 @@ WHERE
                         FROM
                             trading
                         NATURAL JOIN cargo
-                    GROUP BY
-                        port_name,
-                        port_country_name,
-                        product_id) AS S4
-                WHERE
-                    S4.port_country_name = S3.port_country_name)) AS S5
+                        GROUP BY
+                            port_name,
+                            port_country_name,
+                            product_id) AS S4
+                    WHERE
+                        S4.port_country_name = S3.port_country_name)) AS S5
         WHERE
             C2.continent = C.continent);
 
@@ -1137,24 +1126,23 @@ SELECT
     SUM(D.passengers_total) as passengers_total
 FROM
     ships
-    NATURAL JOIN (
+NATURAL JOIN (
+    SELECT
+        ship_id,
+        SUM(COALESCE(A.volume_cargo, 0)) AS volume_total,
+        SUM(passengers) AS passengers_total
+    FROM
+        shipments
+    NATURAL LEFT OUTER JOIN (
         SELECT
-            ship_id,
-            SUM(COALESCE(A.volume_cargo, 0)) AS volume_total,
-            SUM(passengers) AS passengers_total
+            shipment_id,
+            cargo_id,
+            ((quantity * volume) + 0.0) AS volume_cargo
         FROM
-            shipments
-            NATURAL
-            LEFT OUTER JOIN (
-                SELECT
-                    shipment_id,
-                    cargo_id,
-                    ((quantity * volume) + 0.0) AS volume_cargo
-                FROM
-                    cargo
-                    NATURAL JOIN products) AS A
-            GROUP BY
-                ship_id) AS D
+            cargo
+        NATURAL JOIN products) AS A
+    GROUP BY
+        ship_id) AS D
 GROUP BY
     ship_category;
 
@@ -1182,31 +1170,31 @@ FROM (
         FROM
             trading
         NATURAL JOIN cargo
-    GROUP BY
-        port_name,
-        port_country_name,
-        product_id) AS S
-WHERE
-    S.bought = (
-        SELECT
-            MAX(bought)
-        FROM (
-            SELECT
-                port_country_name AS country_name,
-                product_id,
-                SUM(bought) AS bought
-            FROM
-                trading
-            NATURAL JOIN cargo
         GROUP BY
-            port_name,
             port_country_name,
-            product_id) AS S1
+            product_id) AS S
     WHERE
-        S1.country_name = S.country_name)) AS F1
+        S.bought = (
+            SELECT
+                MAX(bought)
+            FROM (
+                SELECT
+                    port_country_name AS country_name,
+                    product_id,
+                    SUM(bought) AS bought
+                FROM
+                    trading
+                NATURAL JOIN cargo
+                GROUP BY
+                    port_country_name,
+                    product_id) AS S1
+            WHERE
+                S1.country_name = S.country_name)) AS F1
     JOIN (
         SELECT
-            S.country_name, S.product_id, S.sold
+            S.country_name,
+            S.product_id,
+             S.sold
         FROM (
             SELECT
                 port_country_name AS country_name,
@@ -1214,29 +1202,30 @@ WHERE
                 SUM(sold) AS sold
             FROM
                 trading
-                NATURAL JOIN cargo
+            NATURAL JOIN cargo
             GROUP BY
                 port_name,
                 port_country_name,
                 product_id) AS S
         WHERE
             S.sold = (
-                SELECT
-                    MAX(sold)
-                FROM (
                     SELECT
-                        port_country_name AS country_name,
-                        product_id,
-                        SUM(sold) AS sold
-                    FROM
-                        trading
-                    NATURAL JOIN cargo
-                GROUP BY
-                    port_name,
-                    port_country_name,
-                    product_id) AS S1
-            WHERE
-                S1.country_name = S.country_name)) AS F2 ON F1.country_name = F2.country_name;
+                        MAX(sold)
+                    FROM (
+                        SELECT
+                            port_country_name AS country_name,
+                            product_id,
+                            SUM(sold) AS sold
+                        FROM
+                            trading
+                        NATURAL JOIN cargo
+                        GROUP BY
+                            port_name,
+                            port_country_name,
+                            product_id) AS S1
+                    WHERE
+                        S1.country_name = S.country_name)) AS F2 
+    ON F1.country_name = F2.country_name;
 
 -- Requête 19
 -- Retourne la date à laquelle la plus grande quantité ou le plus grand volume de marchandises a été échangé (acheté et vendu).
@@ -1256,8 +1245,8 @@ FROM (
     FROM
         trading
     NATURAL JOIN legs
-GROUP BY
-    arrival_date) AS F
+    GROUP BY
+        arrival_date) AS F
 WHERE
     quantity = (
         SELECT
@@ -1269,8 +1258,8 @@ WHERE
             FROM
                 trading
             NATURAL JOIN legs
-        GROUP BY
-            arrival_date) AS T);
+            GROUP BY
+                arrival_date) AS T);
 
 -- Par volume :
 -- Per volume:
@@ -1292,15 +1281,15 @@ FROM (
             (sold * volume) AS sold
         FROM
             trading
-            NATURAL JOIN (
-                SELECT
-                    cargo_id,
-                    volume
-                FROM
-                    cargo
-                    NATURAL JOIN products) AS V) AS V1
-        GROUP BY
-            arrival_date) AS F
+        NATURAL JOIN (
+            SELECT
+                   cargo_id,
+                volume
+            FROM
+                 cargo
+            NATURAL JOIN products) AS V) AS V1
+    GROUP BY
+        arrival_date) AS F
 WHERE
     volume = (
         SELECT
@@ -1320,15 +1309,15 @@ WHERE
                     (sold * volume) AS sold
                 FROM
                     trading
-                    NATURAL JOIN (
-                        SELECT
-                            cargo_id,
-                            volume
-                        FROM
-                            cargo
-                            NATURAL JOIN products) AS V2) AS V3
-                GROUP BY
-                    arrival_date) AS T);
+                NATURAL JOIN (
+                    SELECT
+                        cargo_id,
+                        volume
+                    FROM
+                        cargo
+                    NATURAL JOIN products) AS V2) AS V3
+            GROUP BY
+                arrival_date) AS T);
 
 -- Requête 20
 -- Retourne la quantité de produits vendus par catégorie pour chaque continent.
@@ -1359,7 +1348,7 @@ WITH trade_data (
                 SUM(sold + bought) AS quantity
             FROM
                 trading
-                NATURAL JOIN cargo
+            NATURAL JOIN cargo
             GROUP BY
                 port_name,
                 port_country_name,
@@ -1381,43 +1370,43 @@ FROM (
     FROM
         trade_data
     NATURAL JOIN clothes
-GROUP BY
-    continent
-UNION
-SELECT
-    continent,
-    0 AS clothes,
-    SUM(quantity) AS materials,
-    0 AS food,
-    0 AS misc
-FROM
-    trade_data
+    GROUP BY
+        continent
+    UNION
+    SELECT
+        continent,
+        0 AS clothes,
+        SUM(quantity) AS materials,
+        0 AS food,
+        0 AS misc
+    FROM
+        trade_data
     NATURAL JOIN materials
-GROUP BY
-    continent
-UNION
-SELECT
-    continent,
-    0 AS clothes,
-    0 AS materials,
-    0 AS food,
-    SUM(quantity) AS misc
-FROM
-    trade_data
+    GROUP BY
+        continent
+    UNION
+    SELECT
+        continent,
+        0 AS clothes,
+        0 AS materials,
+        0 AS food,
+        SUM(quantity) AS misc
+    FROM
+        trade_data
     NATURAL JOIN misc
-GROUP BY
-    continent
-UNION
-SELECT
-    continent,
-    0 AS clothes,
-    0 AS materials,
-    SUM(quantity) AS food,
-    0 AS msic
-FROM
-    trade_data
+    GROUP BY
+        continent
+    UNION
+    SELECT
+        continent,
+        0 AS clothes,
+        0 AS materials,
+        SUM(quantity) AS food,
+        0 AS msic
+    FROM
+        trade_data
     NATURAL JOIN food
-GROUP BY
-    continent) AS F
+    GROUP BY
+        continent) AS F
 GROUP BY
     continent;

@@ -15,8 +15,8 @@ FROM (
     FROM
         trading
     NATURAL JOIN legs
-GROUP BY
-    arrival_date) AS F
+    GROUP BY
+        arrival_date) AS F
 WHERE
     quantity = (
         SELECT
@@ -28,8 +28,8 @@ WHERE
             FROM
                 trading
             NATURAL JOIN legs
-        GROUP BY
-            arrival_date) AS T);
+            GROUP BY
+                arrival_date) AS T);
 
 -- Par volume :
 -- Per volume:
@@ -51,15 +51,15 @@ FROM (
             (sold * volume) AS sold
         FROM
             trading
-            NATURAL JOIN (
-                SELECT
-                    cargo_id,
-                    volume
-                FROM
-                    cargo
-                    NATURAL JOIN products) AS V) AS V1
-        GROUP BY
-            arrival_date) AS F
+        NATURAL JOIN (
+            SELECT
+                   cargo_id,
+                volume
+            FROM
+                 cargo
+            NATURAL JOIN products) AS V) AS V1
+    GROUP BY
+        arrival_date) AS F
 WHERE
     volume = (
         SELECT
@@ -79,12 +79,12 @@ WHERE
                     (sold * volume) AS sold
                 FROM
                     trading
-                    NATURAL JOIN (
-                        SELECT
-                            cargo_id,
-                            volume
-                        FROM
-                            cargo
-                            NATURAL JOIN products) AS V2) AS V3
-                GROUP BY
-                    arrival_date) AS T);
+                NATURAL JOIN (
+                    SELECT
+                        cargo_id,
+                        volume
+                    FROM
+                        cargo
+                    NATURAL JOIN products) AS V2) AS V3
+            GROUP BY
+                arrival_date) AS T);

@@ -1,9 +1,9 @@
--- Liste récursivement toutes les expéditions effectués par un navire pendant ses expéditions jusqu'à sa capture par un ennemi.
+-- retourne l'id du voyage qui a duré le plus longtemps.
 
--- Returns the shipment id with the longuest distance travelled.
+-- Returns the shipment id with the longuest duration travelled.
 
--- Sans valeurs NULL.
--- Without NULL values.
+-- valeurs NULL sont ignorées par MAX().
+-- NULL values skipped by MAX().
 SELECT
     shipment_id
 FROM
@@ -15,8 +15,8 @@ WHERE
         FROM
             shipments);
 
--- Avec valeurs NULL.
--- With NULL values.
+-- les valeurs NULL donnent unknown comme résultat.
+-- NULL values give unknown result.
 SELECT
     shipment_id
 FROM

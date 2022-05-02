@@ -23,10 +23,8 @@ WITH shipment_data (
 		PAF.port_country_name_end,
 		PAF.passengers_start,
 		PAF.passengers_end,
-		COALESCE(VF.volume_start,
-			0) AS volume_start,
-		COALESCE(VF.volume_end,
-			0) AS volume_end
+		COALESCE(VF.volume_start,0) AS volume_start,
+		COALESCE(VF.volume_end,0) AS volume_end
 	FROM (
 		SELECT
 			shipment_id,
@@ -35,35 +33,29 @@ WITH shipment_data (
 			port_name_end,
 			port_country_name_end,
 			passengers AS passengers_start,
-			((passengers + COALESCE(gain,
-						0)) - COALESCE(lose,
-					0)) AS passengers_end
+			((passengers + COALESCE(gain,0)) - COALESCE(lose,0)) AS passengers_end
 		FROM
 			shipments
-		NATURAL
-	LEFT OUTER JOIN (
-	SELECT
-		shipment_id,
-		SUM(loaded_passengers) AS gain,
-		SUM(offloaded_passengers) AS lose
-	FROM
-		legs
-	GROUP BY
-		shipment_id) AS PA) AS PAF
-	NATURAL
-	LEFT OUTER JOIN (
-	SELECT
-		shipment_id,
-		S.volume_shipment AS volume_start,
-		((S.volume_shipment + COALESCE(T.gain,
-					0)) - COALESCE(T.lose,
-				0)) AS volume_end
-	FROM (
+		NATURAL LEFT OUTER JOIN (
+			SELECT
+				shipment_id,
+				SUM(loaded_passengers) AS gain,
+				SUM(offloaded_passengers) AS lose
+			FROM
+				legs
+			GROUP BY
+				shipment_id) AS PA) AS PAF
+	NATURAL LEFT OUTER JOIN (
 		SELECT
 			shipment_id,
-			SUM(A.volume_cargo) AS volume_shipment
-		FROM
-			shipments
+			S.volume_shipment AS volume_start,
+			((S.volume_shipment + COALESCE(T.gain,0)) - COALESCE(T.lose,0)) AS volume_end
+		FROM (
+			SELECT
+				shipment_id,
+				SUM(A.volume_cargo) AS volume_shipment
+			FROM
+				shipments
 			NATURAL JOIN (
 				SELECT
 					shipment_id,
@@ -71,26 +63,25 @@ WITH shipment_data (
 					((quantity * volume) + 0.0) AS volume_cargo
 				FROM
 					cargo
-					NATURAL JOIN products) AS A
+				NATURAL JOIN products) AS A
 			GROUP BY
 				shipment_id) AS S
-		NATURAL
-	LEFT OUTER JOIN (
-	SELECT
-		shipment_id,
-		SUM(bought * volume_cargo) AS gain,
-		SUM(sold * volume_cargo) AS lose
-	FROM
-		trading
-		NATURAL JOIN (
+		NATURAL LEFT OUTER JOIN (
 			SELECT
-				cargo_id,
-				volume AS volume_cargo
+				shipment_id,
+				SUM(bought * volume_cargo) AS gain,
+				SUM(sold * volume_cargo) AS lose
 			FROM
-				cargo
+				trading
+			NATURAL JOIN (
+				SELECT
+					cargo_id,
+					volume AS volume_cargo
+				FROM
+					cargo
 				NATURAL JOIN products) AS PR
-		GROUP BY
-			shipment_id) AS T) AS VF
+			GROUP BY
+				shipment_id) AS T) AS VF
 )
 SELECT
 	port_name,
@@ -134,38 +125,36 @@ FROM (
 		port_country_name,
 		P.arrive AS passengers_arrive,
 		P.left AS passengers_left,
-		V.receive AS volume_receive,
-		V.send AS volume_send,
+		COALESCE(V.receive,0) AS volume_receive,
+		COALESCE(V.send,0) AS volume_send,
 		P.nb_shipment
 	FROM (
 		SELECT
 			port_name,
 			port_country_name,
-			SUM(loaded_passengers) AS
-		LEFT,
-		SUM(offloaded_passengers) AS arrive,
-		count(*) AS nb_shipment
-	FROM
-		legs
-	GROUP BY
-		port_name,
-		port_country_name) AS P
-	NATURAL
-	LEFT OUTER JOIN (
-	SELECT
-		port_name,
-		port_country_name,
-		SUM(bought * volume_cargo) AS send,
-		SUM(sold * volume_cargo) AS receive
-	FROM
-		trading
+			SUM(loaded_passengers) AS left,
+			SUM(offloaded_passengers) AS arrive,
+			count(*) AS nb_shipment
+		FROM
+			legs
+		GROUP BY
+			port_name,
+			port_country_name) AS P
+	NATURAL LEFT OUTER JOIN (
+		SELECT
+			port_name,
+			port_country_name,
+			SUM(bought * volume_cargo) AS send,
+			SUM(sold * volume_cargo) AS receive
+		FROM
+			trading
 		NATURAL JOIN (
 			SELECT
 				cargo_id,
 				volume AS volume_cargo
 			FROM
 				cargo
-				NATURAL JOIN products) AS PR
+			NATURAL JOIN products) AS PR
 		GROUP BY
 			port_name,
 			port_country_name) AS V) AS F

@@ -13,10 +13,10 @@ NATURAL JOIN (
     SELECT
         shipment_id,
         ship_id,
-        SUM(A.volume_cargo) AS volume_shipment
+        SUM(COALESCE(A.volume_cargo,0)) AS volume_shipment
     FROM
         shipments
-    NATURAL JOIN (
+    NATURAL LEFT OUTER JOIN (
         SELECT
             shipment_id,
             cargo_id,

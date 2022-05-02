@@ -1,6 +1,6 @@
--- Retourne le produit le plus vendu par classe ou par continent.
+-- Retourne le produit le plus échangé par classe ou par continent.
 
--- Returns the most sold product per class or continent.
+-- Returns the most trade product per class or continent.
 
 -- Par classe :
 -- Per class:
@@ -16,7 +16,7 @@ FROM (shipments
 			SUM(sold + bought) AS quantity
 		FROM
 			trading
-			NATURAL JOIN cargo
+		NATURAL JOIN cargo
 		GROUP BY
 			shipment_id,
 			product_id) AS S) AS S1
@@ -32,12 +32,12 @@ WHERE
 			FROM
 				trading
 			NATURAL JOIN cargo
-		GROUP BY
-			shipment_id,
-			product_id) AS S2
-	NATURAL JOIN shipments
-WHERE
-	class = S1.class);
+			GROUP BY
+				shipment_id,
+				product_id) AS S2
+		NATURAL JOIN shipments
+		WHERE
+			class = S1.class);
 
 -- Par continent :
 -- Per continent:
@@ -47,37 +47,37 @@ SELECT
 	S2.quantity
 FROM
 	countries AS C
-	NATURAL JOIN (
+NATURAL JOIN (
+	SELECT
+		S.port_country_name AS country_name,
+		S.product_id,
+		S.quantity
+	FROM (
 		SELECT
-			S.port_country_name AS country_name,
-			S.product_id,
-			S.quantity
-		FROM (
+			port_name,
+			port_country_name,
+			product_id,
+			SUM(sold + bought) AS quantity
+		FROM
+			trading
+		NATURAL JOIN cargo
+		GROUP BY
+			port_name,
+			port_country_name,
+			product_id) AS S
+	WHERE
+		S.quantity = (
 			SELECT
-				port_name,
-				port_country_name,
-				product_id,
-				SUM(sold + bought) AS quantity
-			FROM
-				trading
-				NATURAL JOIN cargo
-			GROUP BY
-				port_name,
-				port_country_name,
-				product_id) AS S
-		WHERE
-			S.quantity = (
+				MAX(quantity)
+			FROM (
 				SELECT
-					MAX(quantity)
-				FROM (
-					SELECT
-						port_name,
-						port_country_name,
-						product_id,
-						SUM(sold + bought) AS quantity
-					FROM
-						trading
-					NATURAL JOIN cargo
+					port_name,
+					port_country_name,
+					product_id,
+					SUM(sold + bought) AS quantity
+				FROM
+					trading
+				NATURAL JOIN cargo
 				GROUP BY
 					port_name,
 					port_country_name,
@@ -101,7 +101,7 @@ WHERE
 					SUM(sold + bought) AS quantity
 				FROM
 					trading
-					NATURAL JOIN cargo
+				NATURAL JOIN cargo
 				GROUP BY
 					port_name,
 					port_country_name,
@@ -119,11 +119,11 @@ WHERE
 						FROM
 							trading
 						NATURAL JOIN cargo
-					GROUP BY
-						port_name,
-						port_country_name,
-						product_id) AS S4
-				WHERE
-					S4.port_country_name = S3.port_country_name)) AS S5
+						GROUP BY
+							port_name,
+							port_country_name,
+							product_id) AS S4
+					WHERE
+						S4.port_country_name = S3.port_country_name)) AS S5
 		WHERE
 			C2.continent = C.continent);

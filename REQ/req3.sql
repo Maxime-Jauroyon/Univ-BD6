@@ -23,7 +23,7 @@ NATURAL JOIN (
         COUNT(shipment_id) AS nbTotal
     FROM
         ships
-        NATURAL JOIN shipments
+    NATURAL JOIN shipments
     GROUP BY
         ship_id) AS T
 WHERE
