@@ -73,11 +73,11 @@ CREATE TABLE ships_nationalities (
 -- Represents a shipment (= a travel).
 CREATE TABLE shipments (
     shipment_id int4 NOT NULL,
-    ship_id int4,
-    port_name_start text,
-    port_name_end text,
-    port_country_name_start text,
-    port_country_name_end text,
+    ship_id int4 NOT NULL,
+    port_name_start text NOT NULL,
+    port_name_end text NOT NULL,
+    port_country_name_start text NOT NULL,
+    port_country_name_end text NOT NULL,
     start_date date NOT NULL,
     end_date date,
     duration int4,
@@ -145,8 +145,8 @@ CREATE TABLE misc (
 -- Represents a cargo (a set of a specific product with a given quantity).
 CREATE TABLE cargo (
     cargo_id int4 NOT NULL,
-    shipment_id int4,
-    product_id int4,
+    shipment_id int4 NOT NULL,
+    product_id int4 NOT NULL,
     quantity int4 NOT NULL,
     PRIMARY KEY (cargo_id)
 );
